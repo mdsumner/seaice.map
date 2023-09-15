@@ -49,7 +49,7 @@ jobs:
         run: Rscript -e 'rmarkdown::render("README.Rmd")'
 
       - name: cleanup
-        run: rm README.md
+        run: rm README.html
 
 
 
