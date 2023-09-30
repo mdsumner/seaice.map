@@ -54,7 +54,7 @@ jobs:
       - name: Get data
         run: Rscript -e 'source("data-raw/get-data.R", echo = TRUE)'
 
-     - name: Get update list
+      - name: Get update list
         run: Rscript -e 'source("data-raw/list_ice_files.R", echo = TRUE)'
 
       - name: Render README
