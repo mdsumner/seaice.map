@@ -10,13 +10,13 @@ datesuffix <- file.path(unique(tolower(format(dates, "%Y/%b"))), "Antarctic3125"
 x<- blueant::sources("Artist AMSR2 near-real-time 3.125km sea ice concentration")
 
 cf <- bb_add(cf, x)
-
+#
 status <- bb_sync(cf, verbose = FALSE, dry_run = TRUE)
 
-arrow::write_parquet(do.call(rbind, status$files[[1]]),  "data-raw/icefiles.parquet")
+write.csv(do.call(rbind, status$files[[1]]),  "data-raw/icefiles.csv", row.names = FALSE)
 
 
-
+#
 # print(x$source_url)
 #
 # year <- as.character(as.integer(format(Sys.Date(), "%Y")) + c(0))
