@@ -15,8 +15,8 @@ status <- bb_sync(cf, verbose = FALSE, dry_run = TRUE)
 files <- do.call(rbind, status$files)
 files$file <- ""
 files$note <- ""
-write.csv(files,  "data-raw/icefiles.csv", row.names = FALSE)
-
+#write.csv(files,  "data-raw/icefiles.csv", row.names = FALSE)
+arrow::write_parquet(files, sprintf("files_%s_.parquet", x$id), compression = "zstd")
 
 #
 # print(x$source_url)
