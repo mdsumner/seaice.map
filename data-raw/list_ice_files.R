@@ -13,7 +13,7 @@ cf <- bb_add(cf, x)
 
 status <- bb_sync(cf, verbose = FALSE, dry_run = TRUE)
 
-arrow::write_parquet(dplyr::bind_rows(status$files[[1]]),  "data-raw/icefiles.parquet")
+arrow::write_parquet(do.call(rbind, status$files[[1]]),  "data-raw/icefiles.parquet")
 
 
 
