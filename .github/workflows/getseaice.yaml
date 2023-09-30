@@ -42,8 +42,20 @@ jobs:
       - name: Install packages
         run: Rscript -e 'pak::pak(c("vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/dsn"))'
 
+      - name: Install packages 2
+        run: Rscript -e 'pak::pak(c("archive", "assertthat", "aws.s3", "curl", "fs", "httr", "jsonlite", "lubridate", "magrittr", "methods", "openssl", "R.utils", "rmarkdown", "rvest", "stringr", "sys", "tibble", "xml2", "arrow"))'
+
+      - name: Install bowerbird
+        run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list"))'
+
+      - name: Install blueant
+        run: Rscript -e 'pak::pak(c("AustralianAntarcticDivision/blueant"))'
+
       - name: Get data
         run: Rscript -e 'source("data-raw/get-data.R", echo = TRUE)'
+
+     - name: Get update list
+        run: Rscript -e 'source("data-raw/list_ice_files.R", echo = TRUE)'
 
       - name: Render README
         run: Rscript -e 'rmarkdown::render("README.Rmd")'
