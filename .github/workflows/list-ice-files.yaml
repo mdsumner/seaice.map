@@ -44,7 +44,10 @@ jobs:
 
 
       - name: Install bowerbird
-        run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list", "AustralianAntarcticDivision/blueant"))'
+        run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list"))'
+
+      - name: Install blueant
+        run: Rscript -e 'pak::pak(c("AustralianAntarcticDivision/blueant"))'
 
       - name: Get data
         run: Rscript -e 'source("data-raw/list_ice_files.R", echo = TRUE)'
