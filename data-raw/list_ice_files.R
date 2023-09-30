@@ -13,7 +13,7 @@ cf <- bb_add(cf, x)
 
 status <- bb_sync(cf, verbose = FALSE, dry_run = TRUE)
 
-arrow::write_parquet(dplyr::bind_rows(status$files[[1]]), geom = character(), "data-raw/icefiles.parquet", driver = "Parquet")
+arrow::write_parquet(dplyr::bind_rows(status$files[[1]]),  "data-raw/icefiles.parquet")
 
 
 
