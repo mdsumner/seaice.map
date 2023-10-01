@@ -40,17 +40,11 @@ jobs:
       - name: Install package deps
         run: Rscript -e 'pak::pak(c("arrow", "vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/dsn"))'
 
-      - name: Install bowerbird
-        run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list"))'
+      - name: Get data
+        run: Rscript -e 'source("data-raw/get-data.R", echo = TRUE)'
 
-      - name: Install blueant
-        run: Rscript -e 'pak::pak(c("AustralianAntarcticDivision/blueant"))'
-
-      - name: Get update list
-        run: Rscript -e 'source("data-raw/list_ice_files.R", echo = TRUE)'
-
-      - name: Get Nuyina underway
-        run: Rscript -e 'source("data-raw/get-underway.R", echo = TRUE)'
+      - name: Render README
+        run: Rscript -e 'rmarkdown::render("README.Rmd")'
 
       - name: cleanup
         run: rm README.html
