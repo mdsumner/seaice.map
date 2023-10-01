@@ -40,7 +40,7 @@ jobs:
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cloud.r-project.org/")'
 
       - name: Install package deps
-        run: Rscript -e 'pak::pak(c("vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/dsn"))'
+        run: Rscript -e 'pak::pak(c("arrow", "vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/dsn"))'
 
      # - name: Install packages 2
     #    run: Rscript -e 'pak::pak(c("arrow", "archive", "assertthat", "aws.s3", "curl", "fs", "httr", "jsonlite", "lubridate", "magrittr", "methods", "openssl", "R.utils", "rmarkdown", "rvest", "stringr", "sys", "tibble", "xml2", "arrow"))'
