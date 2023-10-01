@@ -36,10 +36,10 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gdal
 
-      - name: Install packages
+      - name: Install package installer
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cloud.r-project.org/")'
 
-      - name: Install packages
+      - name: Install package deps
         run: Rscript -e 'pak::pak(c("vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/dsn"))'
 
      # - name: Install packages 2
