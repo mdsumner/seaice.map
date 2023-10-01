@@ -7,36 +7,62 @@
 <!-- [![R-CMD-check](https://github.com/mdsumner/seaice.map/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mdsumner/seaice.map/actions/workflows/R-CMD-check.yaml)-->
 <!-- badges: end -->
 
-The goal of seaice.map is to … display this image.
+The goal of seaice.map is to
+
+- download very latest available sea ice concentration data
+- generate a global map of the data with a customizable focus
+  (i.e. global but centred on Tasmania/East Antarctica)
+- also show some contextual spatio-temporal data (i.e. recent movements
+  of a research vessel)
+- explicate how to do this all with free tools.
 
 ``` r
 library(terra)
-#> terra 1.7.46
+#> terra 1.7.49
 r <- rast("data-raw/seaice.png")
 plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
 
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), pch = ".", col = "#777777")
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
-aadcgeoserver <- "WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities"
-layer <- "underway:nuyina_underway"
-info <- vapour::vapour_layer_info(aadcgeoserver, "underway:nuyina_underway")
 
+#aadcgeoserver <- "WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities"
+#layer <- "underway:nuyina_underway"
+#info <- vapour::vapour_layer_info(aadcgeoserver, "underway:nuyina_underway")
+#n <- 12 * 24 * 60
+#sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", layer, n, info$count - n)
+#dat <- vapour::vapour_read_fields(aadcgeoserver, sql = sql)
+
+
+info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet", "nuyina_underway")
 n <- 12 * 24 * 60
-sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", layer, n, info$count - n)
+sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", "nuyina_underway", n, info$count - n)
 
+dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
+dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
 
-dat <- vapour::vapour_read_fields(aadcgeoserver,
-                                  sql = sql)
 track <- cbind(dat$longitude, dat$latitude)
 
 track <- terra::project(as.matrix(track), to = terra::crs(r), from = "OGC:CRS84")
 lines(track, col = "hotpink")
 pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
+bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
+rect(bx[1], bx[3], bx[2], bx[4])
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
+
+``` r
+
+plot(track, type = "n", asp = 1)
+title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
+plotRGB(r, add = TRUE)
+lines(track, col = "hotpink")
+lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
+```
+
+<img src="man/figures/README-example-2.png" width="100%" />
 
 ``` r
 
@@ -49,7 +75,7 @@ plot(dat$date_time_utc, dat$fore_2_wind_from_direction_true, pch = 19, cex = .2)
 plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2)
 ```
 
-<img src="man/figures/README-example-2.png" width="100%" />
+<img src="man/figures/README-example-3.png" width="100%" />
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
