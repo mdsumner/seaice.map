@@ -49,9 +49,9 @@ title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 #dat <- vapour::vapour_read_fields(aadcgeoserver, sql = sql)
 
 
-info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet", "nuyina_underway")
+info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet")
 n <- 12 * 24 * 60
-sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", "nuyina_underway", n, info$count - n)
+sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", info$layer_names[1], n, info$count - n)
 
 dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
