@@ -18,7 +18,7 @@ The goal of seaice.map is to
 
 ``` r
 library(terra)
-#> terra 1.7.49
+#> terra 1.7.46
 r <- rast("data-raw/seaice.png")
 plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
 
@@ -34,11 +34,15 @@ title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 #dat <- vapour::vapour_read_fields(aadcgeoserver, sql = sql)
 
 
-info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet", "nuyina_underway")
+#info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet")
 n <- 12 * 24 * 60
-sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", "nuyina_underway", n, info$count - n)
+#sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", info$layer_names[1], n, info$count - n)
 
-dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
+#dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
+
+dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
+dat <- tibble::as_tibble(dat)
+dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
 
 track <- cbind(dat$longitude, dat$latitude)
@@ -55,11 +59,15 @@ rect(bx[1], bx[3], bx[2], bx[4])
 
 ``` r
 
+CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
+CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
+map <- terra::vect(CGAZ, query = CGAZ_sql)
 plot(track, type = "n", asp = 1)
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 plotRGB(r, add = TRUE)
 lines(track, col = "hotpink")
-lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
+#lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
+plot(terra::project(map, terra::crs(r)), add = TRUE, border = "#777777")
 ```
 
 <img src="man/figures/README-example-2.png" width="100%" />
