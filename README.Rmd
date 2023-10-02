@@ -68,11 +68,15 @@ points(pt, pch = "+", col = "hotpink")
 bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
 rect(bx[1], bx[3], bx[2], bx[4])
 
+CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
+CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
+map <- terra::vect(CGAZ, query = CGAZ_sql)
 plot(track, type = "n", asp = 1)
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 plotRGB(r, add = TRUE)
 lines(track, col = "hotpink")
-lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
+#lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
+plot(terra::project(map, terra::crs(r)), add = TRUE, border = "#777777")
 
 
 par(mfrow = c(5, 1))
