@@ -41,6 +41,12 @@ n <- 12 * 24 * 60
 #dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
 
 dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
+
+print(str(dat))
+
+```
+
+```R
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
