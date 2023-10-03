@@ -17,6 +17,14 @@ The goal of seaice.map is to
 - explicate how to do this all with free tools.
 
 ``` r
+
+
+
+
+dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
+
+print(str(dat))
+
 library(terra)
 #> terra 1.7.46
 r <- rast("data-raw/seaice.png")
@@ -26,23 +34,7 @@ points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
 
-#aadcgeoserver <- "WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities"
-#layer <- "underway:nuyina_underway"
-#info <- vapour::vapour_layer_info(aadcgeoserver, "underway:nuyina_underway")
-#n <- 12 * 24 * 60
-#sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", layer, n, info$count - n)
-#dat <- vapour::vapour_read_fields(aadcgeoserver, sql = sql)
 
-
-#info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet")
-n <- 12 * 24 * 60
-#sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", info$layer_names[1], n, info$count - n)
-
-#dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
-
-dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
-
-print(str(dat))
 
 ```
 
