@@ -58,7 +58,9 @@ n <- 12 * 24 * 60
 dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
 
-print(str(dat))
+print(range( dat$date_time_utc))
+print(range( dat$longitude))
+print(range( dat$latitude))
 ```
 
 ```R
