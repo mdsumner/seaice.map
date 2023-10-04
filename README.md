@@ -24,11 +24,6 @@ plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
 
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), pch = ".", col = "#777777")
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
-```
-
-<img src="man/figures/README-example-1.png" width="100%" />
-
-``` r
 
 
 #aadcgeoserver <- "WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities"
@@ -50,13 +45,6 @@ dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
 print(range( dat$date_time_utc))
 #> [1] "2021/12/23 05:00:00+00" "2023/10/04 11:59:00+00"
-print(range( dat$longitude))
-#> [1]  74.9797 159.3644
-print(range( dat$latitude))
-#> [1] -68.58244  42.87968
-```
-
-``` r
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -69,6 +57,11 @@ pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
 bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
 rect(bx[1], bx[3], bx[2], bx[4])
+```
+
+<img src="man/figures/README-example-1.png" width="100%" />
+
+``` r
 
 CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
 CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
@@ -79,15 +72,16 @@ plotRGB(r, add = TRUE)
 lines(track, col = "hotpink")
 #lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
 plot(terra::project(map, terra::crs(r)), add = TRUE, border = "#777777")
-
-
-par(mfrow = c(5, 1))
-plot(dat$date_time_utc, dat$port_solar_irradiance, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$shipnav_ground_course, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$air_pressure_tend3h, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$fore_2_wind_from_direction_true, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2)
 ```
+
+<img src="man/figures/README-example-2.png" width="100%" />
+
+    par(mfrow = c(5, 1))
+    plot(dat$date_time_utc, dat$port_solar_irradiance, pch = 19, cex = .2)
+    plot(dat$date_time_utc, dat$shipnav_ground_course, pch = 19, cex = .2)
+    plot(dat$date_time_utc, dat$air_pressure_tend3h, pch = 19, cex = .2)
+    plot(dat$date_time_utc, dat$fore_2_wind_from_direction_true, pch = 19, cex = .2)
+    plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
