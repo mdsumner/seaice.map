@@ -59,11 +59,6 @@ dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
 
 print(range( dat$date_time_utc))
-print(range( dat$longitude))
-print(range( dat$latitude))
-```
-
-```R
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -87,13 +82,15 @@ lines(track, col = "hotpink")
 #lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
 plot(terra::project(map, terra::crs(r)), add = TRUE, border = "#777777")
 
+```
 
+```
 par(mfrow = c(5, 1))
 plot(dat$date_time_utc, dat$port_solar_irradiance, pch = 19, cex = .2)
 plot(dat$date_time_utc, dat$shipnav_ground_course, pch = 19, cex = .2)
 plot(dat$date_time_utc, dat$air_pressure_tend3h, pch = 19, cex = .2)
 plot(dat$date_time_utc, dat$fore_2_wind_from_direction_true, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2)
+plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2
 
 ```
 
