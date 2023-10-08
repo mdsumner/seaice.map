@@ -76,7 +76,7 @@ rect(bx[1], bx[3], bx[2], bx[4])
 
 ```
 
-```{r example2, fig.dim = c(7, 16.8), results="show"}
+```{r example2, fig.dim = c(7, 5), results="show"}
 CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
 CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
 map <- terra::vect(CGAZ, query = CGAZ_sql)
