@@ -26,6 +26,7 @@ points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
 
+
 #aadcgeoserver <- "WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities"
 #layer <- "underway:nuyina_underway"
 #info <- vapour::vapour_layer_info(aadcgeoserver, "underway:nuyina_underway")
@@ -35,7 +36,7 @@ title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
 
 #info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet")
-n <- 12 * 24 * 60
+n <- 30 * 24 * 60
 #sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", info$layer_names[1], n, info$count - n)
 
 #dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
@@ -62,7 +63,6 @@ rect(bx[1], bx[3], bx[2], bx[4])
 <img src="man/figures/README-example-1.png" width="100%" />
 
 ``` r
-
 CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
 CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
 map <- terra::vect(CGAZ, query = CGAZ_sql)
@@ -74,14 +74,26 @@ lines(track, col = "hotpink")
 plot(terra::project(map, terra::crs(r)), add = TRUE, border = "#777777")
 ```
 
-<img src="man/figures/README-example-2.png" width="100%" />
+<img src="man/figures/README-example2-1.png" width="100%" />
 
-    par(mfrow = c(5, 1))
-    plot(dat$date_time_utc, dat$port_solar_irradiance, pch = 19, cex = .2)
-    plot(dat$date_time_utc, dat$shipnav_ground_course, pch = 19, cex = .2)
-    plot(dat$date_time_utc, dat$air_pressure_tend3h, pch = 19, cex = .2)
-    plot(dat$date_time_utc, dat$fore_2_wind_from_direction_true, pch = 19, cex = .2)
-    plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2
+``` r
+
+
+bad <- is.na(dat$date_time_utc) | is.na(dat$port_solar_irradiance) | is.na(dat$air_pressure_trend3h) | 
+  is.na(dat$fore_2_wind_from_direction_true) | is.na(dat$port_air_temperature)
+if (any(!bad)) {
+  dat <- dat[!bad, ]
+par(mfrow = c(5, 1))
+plot(dat$date_time_utc, dat$port_solar_irradiance, pch = 19, cex = .2)
+plot(dat$date_time_utc, dat$shipnav_ground_course, pch = 19, cex = .2)
+plot(dat$date_time_utc, dat$air_pressure_trend3h, pch = 19, cex = .2)
+plot(dat$date_time_utc, dat$fore_2_wind_from_direction_true, pch = 19, cex = .2)
+plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2)
+
+}
+```
+
+<img src="man/figures/README-example2-2.png" width="100%" />
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
