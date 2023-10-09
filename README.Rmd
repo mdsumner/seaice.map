@@ -33,7 +33,7 @@ The goal of seaice.map is to
 
 
 
-```{r example, fig.dim = c(7, 5), results="show"}
+```{r example, fig.dim = c(7, 16.8), results="show"}
 library(terra)
 r <- rast("data-raw/seaice.png")
 plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
