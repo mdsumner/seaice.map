@@ -18,7 +18,7 @@ The goal of seaice.map is to
 
 ``` r
 library(terra)
-#> terra 1.7.49
+#> terra 1.7.46
 r <- rast("data-raw/seaice.png")
 plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
 
