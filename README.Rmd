@@ -10,8 +10,7 @@ editor_options:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
+  fig.path = "man/figures/README-"
 )
 op <- options(warn = -1)
 
@@ -31,9 +30,7 @@ The goal of seaice.map is to
 - explicate how to do this all with free tools. 
 
 
-
-
-```{r example, fig.dim = c(7, 16.8), results="show"}
+```{r example, fig.dim = c(6, 14.4), results="show"}
 library(terra)
 r <- rast("data-raw/seaice.png")
 plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
@@ -42,20 +39,7 @@ points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
 
-
-#aadcgeoserver <- "WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities"
-#layer <- "underway:nuyina_underway"
-#info <- vapour::vapour_layer_info(aadcgeoserver, "underway:nuyina_underway")
-#n <- 12 * 24 * 60
-#sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", layer, n, info$count - n)
-#dat <- vapour::vapour_read_fields(aadcgeoserver, sql = sql)
-
-
-#info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet")
 n <- 30 * 24 * 60
-#sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", info$layer_names[1], n, info$count - n)
-
-#dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
 
 dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
@@ -74,9 +58,7 @@ points(pt, pch = "+", col = "hotpink")
 bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
 rect(bx[1], bx[3], bx[2], bx[4])
 
-```
 
-```{r example2,  results="show"}
 CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
 CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
 map <- terra::vect(CGAZ, query = CGAZ_sql)
@@ -84,7 +66,6 @@ plot(track, type = "n", asp = 1)
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 plotRGB(r, add = TRUE)
 lines(track, col = "hotpink")
-#lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
 plot(terra::project(map, terra::crs(r)), add = TRUE, border = "#777777")
 
 

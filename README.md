@@ -18,7 +18,7 @@ The goal of seaice.map is to
 
 ``` r
 library(terra)
-#> terra 1.7.46
+#> terra 1.7.49
 r <- rast("data-raw/seaice.png")
 plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
 
@@ -26,26 +26,13 @@ points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
 
-
-#aadcgeoserver <- "WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities"
-#layer <- "underway:nuyina_underway"
-#info <- vapour::vapour_layer_info(aadcgeoserver, "underway:nuyina_underway")
-#n <- 12 * 24 * 60
-#sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", layer, n, info$count - n)
-#dat <- vapour::vapour_read_fields(aadcgeoserver, sql = sql)
-
-
-#info <- vapour::vapour_layer_info("data-raw/nuyina_underway.parquet")
 n <- 30 * 24 * 60
-#sql <- sprintf("SELECT * FROM \"%s\" LIMIT %i OFFSET %i", info$layer_names[1], n, info$count - n)
-
-#dat <- vapour::vapour_read_fields("data-raw/nuyina_underway.parquet", sql = sql)
 
 dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
 
 print(range( dat$date_time_utc))
-#> [1] "2021/12/23 05:00:00+00" "2023/10/07 23:59:00+00"
+#> [1] "2021/12/23 05:00:00+00" "2023/10/09 23:59:00+00"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -60,9 +47,11 @@ bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
 rect(bx[1], bx[3], bx[2], bx[4])
 ```
 
-<img src="man/figures/README-example-1.png" width="100%" />
+![](man/figures/README-example-1.png)<!-- -->
 
 ``` r
+
+
 CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
 CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
 map <- terra::vect(CGAZ, query = CGAZ_sql)
@@ -70,11 +59,10 @@ plot(track, type = "n", asp = 1)
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 plotRGB(r, add = TRUE)
 lines(track, col = "hotpink")
-#lines(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), lwd = 1.5, col = "#777777")
 plot(terra::project(map, terra::crs(r)), add = TRUE, border = "#777777")
 ```
 
-<img src="man/figures/README-example2-1.png" width="100%" />
+![](man/figures/README-example-2.png)<!-- -->
 
 ``` r
 
@@ -93,7 +81,7 @@ plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2)
 }
 ```
 
-<img src="man/figures/README-example2-2.png" width="100%" />
+![](man/figures/README-example-3.png)<!-- -->
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
