@@ -52,11 +52,14 @@ rect(bx[1], bx[3], bx[2], bx[4])
 ``` r
 
 
-#CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
-#CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
-#map <- terra::vect(CGAZ, query = CGAZ_sql)
-#terra::writeVector(map, "data-raw/CGAZ.parquet", filetype = "Parquet")
-map <- terra::vect("data-raw/CGAZ.parquet")
+# CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
+# CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
+# map <- terra::vect(CGAZ, query = CGAZ_sql)
+# #terra::writeVector(map, "data-raw/CGAZ.parquet", filetype = "Parquet")
+# terra::writeVector(map, "data-raw/CGAZ.fgb", filetype = "FlatGeoBuf")
+
+
+map <- terra::vect("data-raw/CGAZ.fgb")
 plot(track, type = "n", asp = 1)
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 #plotRGB(r, add = TRUE)
