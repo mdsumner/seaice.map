@@ -18,11 +18,19 @@ The goal of seaice.map is to
 
 ``` r
 library(terra)
+<<<<<<< HEAD
 #> terra 1.7.49
 r <- vapour::gdal_raster_data("data-raw/seaice.png", bands = 1:3)
 pcrs <- attr(r, "projection")
 ximage::ximage(r, asp = 1, axes = FALSE)
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = pcrs, from = "OGC:CRS84"), pch = ".", col = "#777777")
+=======
+#> terra 1.7.46
+r <- rast("data-raw/seaice.png")
+plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
+
+points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), pch = ".", col = "#777777")
+>>>>>>> eb08a3d0433608c2bfdf865b25ed4813de751ec1
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
 
