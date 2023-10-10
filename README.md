@@ -19,10 +19,10 @@ The goal of seaice.map is to
 ``` r
 library(terra)
 #> terra 1.7.49
-r <- rast("data-raw/seaice.png")
-plotRGB(r, axes = F, maxcell = prod(dim(r)[2:1]))
-
-points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = terra::crs(r), from = "OGC:CRS84"), pch = ".", col = "#777777")
+r <- vapour::gdal_raster_data("data-raw/seaice.png", bands = 1:3)
+pcrs <- attr(r, "projection")
+ximage::ximage(r, asp = 1, axes = FALSE)
+points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = pcrs, from = "OGC:CRS84"), pch = ".", col = "#777777")
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
 
@@ -39,7 +39,7 @@ dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UT
 
 track <- cbind(dat$longitude, dat$latitude)
 
-track <- terra::project(as.matrix(track), to = terra::crs(r), from = "OGC:CRS84")
+track <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
 lines(track, col = "hotpink")
 pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
@@ -52,14 +52,17 @@ rect(bx[1], bx[3], bx[2], bx[4])
 ``` r
 
 
-CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
-CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
-map <- terra::vect(CGAZ, query = CGAZ_sql)
+#CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
+#CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
+#map <- terra::vect(CGAZ, query = CGAZ_sql)
+#terra::writeVector(map, "data-raw/CGAZ.parquet", filetype = "Parquet")
+map <- terra::vect("data-raw/CGAZ.parquet")
 plot(track, type = "n", asp = 1)
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
-plotRGB(r, add = TRUE)
+#plotRGB(r, add = TRUE)
+ximage::ximage(r, add = TRUE)
 lines(track, col = "hotpink")
-plot(terra::project(map, terra::crs(r)), add = TRUE, border = "#777777")
+plot(terra::project(map, pcrs), add = TRUE, border = "#777777")
 ```
 
 ![](man/figures/README-example-2.png)<!-- -->
