@@ -18,7 +18,7 @@ The goal of seaice.map is to
 
 ``` r
 library(terra)
-#> terra 1.7.46
+#> terra 1.7.55
 r <- vapour::gdal_raster_data("data-raw/seaice.png", bands = 1:3)
 pcrs <- attr(r, "projection")
 ximage::ximage(r, asp = 1, axes = FALSE)
@@ -32,7 +32,7 @@ dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
 
 print(range( dat$date_time_utc))
-#> [1] "2021/12/23 05:00:00+00" "2023/10/13 11:59:00+00"
+#> [1] "2021/12/23 05:00:00+00" "2023/10/13 23:59:00+00"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
