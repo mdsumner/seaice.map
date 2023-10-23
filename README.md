@@ -105,7 +105,7 @@ loc <- track[nrow(track),,  drop = FALSE]
 xr <- loc[1,1] + c(-1000, 1000) 
 yr <- loc[1,2] + c(-1000, 1000) 
 
-gmap <- vapour::gdal_raster_image(spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
+gmap <- vapour::gdal_raster_image(spatial.datasources::wms_googlehybrid_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 if (length(unique(gmap[[1]])) < 800) {
 
 xr <- loc[1,1] + c(-1000, 1000) * 800
