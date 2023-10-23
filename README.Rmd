@@ -106,7 +106,7 @@ Files in 'data-raw/' contain the actual metadata and scripts. This runs as a dai
 
 Now zoom in on the ship some more. 
 
-```{r zoom}
+```{r zoom, fig.dim = c(7,7)}
 loc <- track[nrow(track),,  drop = FALSE]
 #loc <- terra::project(cbind(-70.933004,-10.7192677)[,2:1, drop = F], to = pcrs, from = "OGC:CRS84")
 xr <- loc[1,1] + c(-1000, 1000) 
