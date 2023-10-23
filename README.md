@@ -32,7 +32,7 @@ dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
 
 print(range( dat$date_time_utc))
-#> [1] "2021/12/23 05:00:00+00" "2023/10/22 23:59:00+00"
+#> [1] "2021/12/23 05:00:00+00" "2023/10/23 19:59:00+00"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -108,8 +108,8 @@ yr <- loc[1,2] + c(-1000, 1000)
 gmap <- vapour::gdal_raster_image(spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 if (length(unique(gmap[[1]])) < 800) {
 
-xr <- loc[1,1] + c(-1000, 1000) * 500
-yr <- loc[1,2] + c(-1000, 1000) * 500
+xr <- loc[1,1] + c(-1000, 1000) * 800
+yr <- loc[1,2] + c(-1000, 1000) * 800
 gmap <- vapour::gdal_raster_image(spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 #length(unique(gmap[[1]]))
 }
