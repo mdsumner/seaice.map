@@ -106,13 +106,13 @@ Files in 'data-raw/' contain the actual metadata and scripts. This runs as a dai
 
 Now zoom in on the ship some more. 
 
-```{r zoom, fig.dim = c(7,7)}
+```{r zoom, fig.dim = c(9, 9)}
 loc <- track[nrow(track),,  drop = FALSE]
 #loc <- terra::project(cbind(-70.933004,-10.7192677)[,2:1, drop = F], to = pcrs, from = "OGC:CRS84")
 xr <- loc[1,1] + c(-1000, 1000) 
 yr <- loc[1,2] + c(-1000, 1000) 
 
-gmap <- vapour::gdal_raster_image(spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
+gmap <- vapour::gdal_raster_image(spatial.datasources::wms_googlehybrid_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 if (length(unique(gmap[[1]])) < 800) {
 
 xr <- loc[1,1] + c(-1000, 1000) * 800
