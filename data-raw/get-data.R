@@ -36,8 +36,16 @@ file.rename("data-raw/seaice.png", "data-raw/old-seaice.png")
 
 
 im <- gdal_raster_dsn(file.path("/vsicurl", c(north, south)),
-                      target_res = 25000, target_crs = "+proj=tmerc +lon_0=147", target_ext = tm_ex,
+                      target_res = 5000, target_crs = "+proj=tmerc +lon_0=147", target_ext = tm_ex,
                       out_dsn = "data-raw/seaice.tif", options = c("-of", "GTiff", "-co", "COMPRESS=DEFLATE"))
+#
+#
+#
+# im <- gdal_raster_dsn(file.path("/vsicurl", c(north, south)),
+#                       target_res = 15000, target_crs = "+proj=tmerc +lon_0=147", target_ext = tm_ex,
+#                       out_dsn = "data-raw/seaice.png", options = c("-of", "PNG", "-co", "WORLDFILE=YES"))
+#
+
 
 r <- terra::rast(im[[1L]])
 ## hella slow

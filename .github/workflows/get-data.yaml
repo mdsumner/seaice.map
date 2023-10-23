@@ -38,7 +38,7 @@ jobs:
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cloud.r-project.org/")'
 
       - name: Install package deps
-        run: Rscript -e 'pak::pak(c("arrow", "vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/dsn"))'
+        run: Rscript -e 'pak::pak(c("arrow", "vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/spatial.datasources"))'
 
       - name: Install bowerbird
         run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list"))'

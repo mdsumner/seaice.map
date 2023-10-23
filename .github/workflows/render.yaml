@@ -38,7 +38,7 @@ jobs:
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cloud.r-project.org/")'
 
       - name: Install package deps
-        run: Rscript -e 'pak::pak(c("arrow", "vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/dsn", "hypertidy/ximage", "tibble"))'
+        run: Rscript -e 'pak::pak(c("arrow", "vapour", "terra", "here", "rmarkdown",  "maps", "hypertidy/spatial.datasources", "hypertidy/ximage", "tibble"))'
 
       - name: Get data
         run: Rscript -e 'source("data-raw/get-data.R", echo = TRUE)'

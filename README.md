@@ -43,6 +43,9 @@ track <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
 lines(track, col = "hotpink")
 pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
+## key locations just defined in the source of this document
+pl[c("X", "Y")] <- terra::project(cbind(pl$x, pl$y), to = pcrs, from = "OGC:CRS84")
+points(pl$X, pl$Y, pch = 19, col = "white")
 bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
 rect(bx[1], bx[3], bx[2], bx[4])
 ```
@@ -51,12 +54,6 @@ rect(bx[1], bx[3], bx[2], bx[4])
 
 ``` r
 
-
-# CGAZ <- "/vsizip//vsicurl/https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM0.zip"
-# CGAZ_sql <- "SELECT shapeGroup FROM geoBoundariesCGAZ_ADM0 WHERE shapeGroup IN ('AUS','NZL','ATA')"
-# map <- terra::vect(CGAZ, query = CGAZ_sql)
-# #terra::writeVector(map, "data-raw/CGAZ.parquet", filetype = "Parquet")
-# terra::writeVector(map, "data-raw/CGAZ.fgb", filetype = "FlatGeoBuf")
 
 
 map <- terra::vect("data-raw/CGAZ.fgb")
@@ -99,6 +96,31 @@ underway data that measures atmospheric and water properties.
 
 Files in ‘data-raw/’ contain the actual metadata and scripts. This runs
 as a daily task on github actions.
+
+Now zoom in on the ship some more.
+
+``` r
+loc <- track[nrow(track),,  drop = FALSE]
+#loc <- terra::project(cbind(-70.933004,-10.7192677)[,2:1, drop = F], to = pcrs, from = "OGC:CRS84")
+xr <- loc[1,1] + c(-1000, 1000) 
+yr <- loc[1,2] + c(-1000, 1000) 
+
+gmap <- vapour::gdal_raster_image(spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
+if (length(unique(gmap[[1]])) < 800) {
+
+xr <- loc[1,1] + c(-1000, 1000) * 500
+yr <- loc[1,2] + c(-1000, 1000) * 500
+gmap <- vapour::gdal_raster_image(spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
+#length(unique(gmap[[1]]))
+}
+
+
+plot(loc[,1:2, drop = F], xlim = xr, ylim =yr, asp = 1, axes = FALSE, xlab = "", ylab = "")
+ximage::ximage(gmap, add = T)
+lines(track, col = "hotpink")
+```
+
+![](man/figures/README-zoom-1.png)<!-- -->
 
 ## Code of Conduct
 
