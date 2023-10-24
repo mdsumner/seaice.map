@@ -16,9 +16,14 @@ The goal of seaice.map is to
   of a research vessel)
 - explicate how to do this all with free tools.
 
+First, a modified map of the subsequent one to put the ship in the
+centre. (we’ll fix this up)
+
+Now the map we carefully designed (but keep changing to figure out how
+we’d like to think about East Antarctica).
+
 ``` r
 library(terra)
-#> terra 1.7.55
 r <- vapour::gdal_raster_data("data-raw/seaice.png", bands = 1:3)
 pcrs <- attr(r, "projection")
 ximage::ximage(r, asp = 1, axes = FALSE)
