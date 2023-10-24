@@ -45,7 +45,7 @@ pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
 ## key locations just defined in the source of this document
 pl[c("X", "Y")] <- terra::project(cbind(pl$x, pl$y), to = pcrs, from = "OGC:CRS84")
-points(pl$X, pl$Y, pch = 19, col = "white")
+points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
 rect(bx[1], bx[3], bx[2], bx[4])
 
@@ -58,7 +58,7 @@ plot(claims, add = TRUE)
 ``` r
 
 map <- terra::vect("data-raw/CGAZ.fgb")
-plot(track, type = "n", asp = 1)
+plot(track, type = "n", asp = 1, axes = F, xlab = "", ylab = "")
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 #plotRGB(r, add = TRUE)
 ximage::ximage(r, add = TRUE)
@@ -66,27 +66,26 @@ lines(track, col = "hotpink")
 plot(terra::project(map, pcrs), add = TRUE, border = "#777777")
 
 plot(claims, add = TRUE)
+points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 1)
 ```
 
 ![](man/figures/README-example-2.png)<!-- -->
 
 ``` r
 
-bad <- is.na(dat$date_time_utc) | is.na(dat$port_solar_irradiance) | is.na(dat$air_pressure_trend3h) | 
-  is.na(dat$fore_2_wind_from_direction_true) | is.na(dat$port_air_temperature)
-if (any(!bad)) {
-  dat <- dat[!bad, ]
-par(mfrow = c(5, 1))
-plot(dat$date_time_utc, dat$port_solar_irradiance, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$shipnav_ground_course, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$air_pressure_trend3h, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$fore_2_wind_from_direction_true, pch = 19, cex = .2)
-plot(dat$date_time_utc, dat$port_air_temperature, pch = 19, cex = .2)
-
-}
+vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
+which(vars %in% names(dat))
+#> [1] 1 2 3 4 5 6 7
+ for (i in seq_along(vars)) {
+   bad <- is.na(dat[[vars[i]]])
+   if (any(!bad)) {
+     dat2 <- dat[!bad, ]
+      plot(dat2$date_time_utc, dat2[[vars[i]]], pch = 19, cex = .2, xlab = "", main = vars[i])
+   }
+ }
 ```
 
-![](man/figures/README-example-3.png)<!-- -->
+![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->![](man/figures/README-traceplots-3.png)<!-- -->![](man/figures/README-traceplots-4.png)<!-- -->![](man/figures/README-traceplots-5.png)<!-- -->![](man/figures/README-traceplots-6.png)<!-- -->![](man/figures/README-traceplots-7.png)<!-- -->
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
@@ -126,6 +125,7 @@ ximage::ximage(gmap, add = T)
 plot(claims, add = TRUE)
 
 lines(track, col = "hotpink")
+points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 ```
 
 ![](man/figures/README-zoom-1.png)<!-- -->
