@@ -48,13 +48,14 @@ pl[c("X", "Y")] <- terra::project(cbind(pl$x, pl$y), to = pcrs, from = "OGC:CRS8
 points(pl$X, pl$Y, pch = 19, col = "white")
 bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
 rect(bx[1], bx[3], bx[2], bx[4])
+
+claims <- terra::project(terra::vect("data-raw/claims/claim_boundaries_ps.shp"), pcrs)
+plot(claims, add = TRUE)
 ```
 
 ![](man/figures/README-example-1.png)<!-- -->
 
 ``` r
-
-
 
 map <- terra::vect("data-raw/CGAZ.fgb")
 plot(track, type = "n", asp = 1)
@@ -63,12 +64,13 @@ title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "whit
 ximage::ximage(r, add = TRUE)
 lines(track, col = "hotpink")
 plot(terra::project(map, pcrs), add = TRUE, border = "#777777")
+
+plot(claims, add = TRUE)
 ```
 
 ![](man/figures/README-example-2.png)<!-- -->
 
 ``` r
-
 
 bad <- is.na(dat$date_time_utc) | is.na(dat$port_solar_irradiance) | is.na(dat$air_pressure_trend3h) | 
   is.na(dat$fore_2_wind_from_direction_true) | is.na(dat$port_air_temperature)
@@ -101,22 +103,28 @@ Now zoom in on the ship some more.
 
 ``` r
 loc <- track[nrow(track),,  drop = FALSE]
-#loc <- terra::project(cbind(-70.933004,-10.7192677)[,2:1, drop = F], to = pcrs, from = "OGC:CRS84")
-xr <- loc[1,1] + c(-1000, 1000) 
-yr <- loc[1,2] + c(-1000, 1000) 
 
-gmap <- vapour::gdal_raster_image(spatial.datasources::wms_googlehybrid_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
+#loc <- terra::project(cbind(-70.933004,-10.7192677)[,2:1, drop = F], to = pcrs, from = "OGC:CRS84")
+xr <- loc[1,1] + c(-1000, 1000) * 4
+yr <- loc[1,2] + c(-1000, 1000)  * 4
+
+
+goog <- spatial.datasources::wms_googlehybrid_tms()
+esri <- spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms()
+gmap <- vapour::gdal_raster_image(goog, target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 if (length(unique(gmap[[1]])) < 800) {
 
 xr <- loc[1,1] + c(-1000, 1000) * 800
 yr <- loc[1,2] + c(-1000, 1000) * 800
-gmap <- vapour::gdal_raster_image(spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms(), target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
+gmap <- vapour::gdal_raster_image(esri, target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 #length(unique(gmap[[1]]))
 }
 
 
 plot(loc[,1:2, drop = F], xlim = xr, ylim =yr, asp = 1, axes = FALSE, xlab = "", ylab = "")
 ximage::ximage(gmap, add = T)
+plot(claims, add = TRUE)
+
 lines(track, col = "hotpink")
 ```
 
