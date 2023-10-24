@@ -15,6 +15,9 @@ status <- bb_sync(cf, verbose = FALSE, dry_run = TRUE)
 files <- do.call(rbind, status$files)
 files$file <- ""
 files$note <- ""
+files <- dplyr::mutate(files, date = as.POSIXct(as.Date(stringr::str_extract(basename(.data$url),
+        "[0-9]{8}"), "%Y%m%d"), tz = "UTC")) |> dplyr::arrange(date)
+#tail(files)
 #write.csv(files,  "data-raw/icefiles.csv", row.names = FALSE)
 arrow::write_parquet(files, sprintf("data-raw/files_%s_.parquet", x$id), compression = "zstd")
 
