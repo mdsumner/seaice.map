@@ -19,6 +19,11 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
+    #> [1] "2021/12/23 05:00:00+00" "2023/10/23 22:59:00+00"
+    #> terra 1.7.55
+
+![](man/figures/README-pivot-map-1.png)<!-- -->
+
 Now the map we carefully designed (but keep changing to figure out how
 we’d like to think about East Antarctica).
 
