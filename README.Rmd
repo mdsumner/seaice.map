@@ -49,7 +49,6 @@ dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 print(range( dat$date_time_utc))
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
-dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
 
 track <- cbind(dat$longitude, dat$latitude)
 

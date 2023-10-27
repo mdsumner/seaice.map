@@ -38,10 +38,10 @@ jobs:
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
 
       - name: Install package deps
-        run: Rscript -e 'pak::pak(c("arrow", "vapour", "terra", "here", "dplyr", "rmarkdown",  "maps", "countrycode"))'
+        run: Rscript -e 'pak::pak(c("arrow",  "terra", "here", "dplyr", "trip", "rmarkdown",  "maps", "countrycode"))'
 
       - name: Install package deps
-        run: Rscript -e 'pak::pak(c("hypertidy/spatial.datasources"))'
+        run: Rscript -e 'pak::pak(c("hypertidy/spatial.datasources", "hypertidy/vapour"))'
 
       - name: Install bowerbird
         run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list"))'
