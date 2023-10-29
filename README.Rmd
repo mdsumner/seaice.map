@@ -50,6 +50,7 @@ print(range( dat$date_time_utc))
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 
+dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 track <- cbind(dat$longitude, dat$latitude)
 
 library(terra)
