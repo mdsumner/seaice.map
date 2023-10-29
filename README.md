@@ -41,6 +41,7 @@ n <- 30 * 24 * 60
 dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
 
+dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$date_time_utc))
 #> [1] "2021-12-23 05:00:00 UTC" "2023-10-28 23:59:00 UTC"
 dat <- tibble::as_tibble(dat)
