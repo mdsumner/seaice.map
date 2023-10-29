@@ -99,6 +99,7 @@ n <- 30 * 24 * 60
 dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
 
 
+dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$date_time_utc))
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
