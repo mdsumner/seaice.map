@@ -96,6 +96,23 @@ ptrack <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
 
 lines(ptrack, col = "hotpink")
 pt <- tail(ptrack[!is.na(track[,1]) & !is.na(ptrack[,2]), ], 1L)
+
+n <- 30 * 24 * 60
+
+dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
+
+
+dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
+print(range( dat$date_time_utc))
+dat <- tibble::as_tibble(dat)
+dat <- tail(dat, n)
+dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
+
+track <- cbind(dat$longitude, dat$latitude)
+
+track <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
+lines(track, col = "hotpink")
+pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
 ## key locations just defined in the source of this document
 pl[c("X", "Y")] <- terra::project(cbind(pl$x, pl$y), to = pcrs, from = "OGC:CRS84")

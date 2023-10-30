@@ -39,6 +39,24 @@ ptrack <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
 
 lines(ptrack, col = "hotpink")
 pt <- tail(ptrack[!is.na(track[,1]) & !is.na(ptrack[,2]), ], 1L)
+
+n <- 30 * 24 * 60
+
+dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
+
+
+dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
+print(range( dat$date_time_utc))
+#> [1] "2021-12-23 05:00:00 UTC" "2023-10-29 23:59:00 UTC"
+dat <- tibble::as_tibble(dat)
+dat <- tail(dat, n)
+dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
+
+track <- cbind(dat$longitude, dat$latitude)
+
+track <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
+lines(track, col = "hotpink")
+pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
 ## key locations just defined in the source of this document
 pl[c("X", "Y")] <- terra::project(cbind(pl$x, pl$y), to = pcrs, from = "OGC:CRS84")
@@ -72,7 +90,7 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 1)
 
 vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
 which(vars %in% names(dat))
-#> [1] 6 7
+#> [1] 1 2 3 4 5 6 7
  for (i in seq_along(vars)) {
    bad <- is.na(dat[[vars[i]]])
    if (any(!bad)) {
@@ -82,7 +100,7 @@ which(vars %in% names(dat))
  }
 ```
 
-![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->
+![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->![](man/figures/README-traceplots-3.png)<!-- -->![](man/figures/README-traceplots-4.png)<!-- -->![](man/figures/README-traceplots-5.png)<!-- -->![](man/figures/README-traceplots-6.png)<!-- -->![](man/figures/README-traceplots-7.png)<!-- -->
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
