@@ -53,7 +53,7 @@ jobs:
         run: Rscript -e 'source("data-raw/list_ice_files.R", echo = TRUE)'
 
       - name: Get Nuyina underway
-        run: Rscript -e 'source("data-raw/get-underway.R", echo = TRUE)'
+        run: Rscript -e 'source("data-raw/kml-underway.R", echo = TRUE)'
 
 
 

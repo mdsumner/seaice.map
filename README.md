@@ -19,7 +19,7 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2023-10-28 23:59:00 UTC"
+    #> [1] "2021-12-23 05:00:00 UTC" "2023-10-30 00:59:00 UTC"
     #> terra 1.7.55
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
@@ -35,31 +35,18 @@ ximage::ximage(r, asp = 1, axes = FALSE)
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = pcrs, from = "OGC:CRS84"), pch = ".", col = "#777777")
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
+ptrack <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
 
-n <- 30 * 24 * 60
-
-dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
-
-
-print(range( dat$date_time_utc))
-#> [1] "2021-12-23 05:00:00 UTC" "2023-10-28 23:59:00 UTC"
-dat <- tibble::as_tibble(dat)
-dat <- tail(dat, n)
-dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
-
-track <- cbind(dat$longitude, dat$latitude)
-
-track <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
-lines(track, col = "hotpink")
-pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
+lines(ptrack, col = "hotpink")
+pt <- tail(ptrack[!is.na(track[,1]) & !is.na(ptrack[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
 ## key locations just defined in the source of this document
 pl[c("X", "Y")] <- terra::project(cbind(pl$x, pl$y), to = pcrs, from = "OGC:CRS84")
 points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
-bx <- c(range(track[,1], na.rm = TRUE), range(track[,2], na.rm = TRUE))
+bx <- c(range(ptrack[,1], na.rm = TRUE), range(ptrack[,2], na.rm = TRUE))
 rect(bx[1], bx[3], bx[2], bx[4])
-
 claims <- terra::project(terra::vect("data-raw/claims/claim_boundaries_ps.shp"), pcrs)
+
 plot(claims, add = TRUE)
 ```
 
@@ -68,11 +55,11 @@ plot(claims, add = TRUE)
 ``` r
 
 map <- terra::vect("data-raw/CGAZ.fgb")
-plot(track, type = "n", asp = 1, axes = F, xlab = "", ylab = "")
+plot(ptrack, type = "n", asp = 1, axes = F, xlab = "", ylab = "")
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 #plotRGB(r, add = TRUE)
 ximage::ximage(r, add = TRUE)
-lines(track, col = "hotpink")
+lines(ptrack, col = "hotpink")
 plot(terra::project(map, pcrs), add = TRUE, border = "#777777")
 
 plot(claims, add = TRUE)
@@ -85,7 +72,7 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 1)
 
 vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
 which(vars %in% names(dat))
-#> [1] 1 2 3 4 5 6 7
+#> [1] 6 7
  for (i in seq_along(vars)) {
    bad <- is.na(dat[[vars[i]]])
    if (any(!bad)) {
@@ -95,7 +82,7 @@ which(vars %in% names(dat))
  }
 ```
 
-![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->![](man/figures/README-traceplots-3.png)<!-- -->![](man/figures/README-traceplots-4.png)<!-- -->![](man/figures/README-traceplots-5.png)<!-- -->![](man/figures/README-traceplots-6.png)<!-- -->![](man/figures/README-traceplots-7.png)<!-- -->
+![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
@@ -111,11 +98,11 @@ as a daily task on github actions.
 Now zoom in on the ship some more.
 
 ``` r
-loc <- track[nrow(track),,  drop = FALSE]
-
+loc <- ptrack[nrow(ptrack),,  drop = FALSE]
+#loc <- pl[2, c("X", "Y")]
 #loc <- terra::project(cbind(-70.933004,-10.7192677)[,2:1, drop = F], to = pcrs, from = "OGC:CRS84")
-xr <- loc[1,1] + c(-1000, 1000) * 4
-yr <- loc[1,2] + c(-1000, 1000)  * 4
+xr <- loc[1,1] + c(-1000, 1000) * 34
+yr <- loc[1,2] + c(-1000, 1000)  * 34
 
 
 goog <- spatial.datasources::wms_googlehybrid_tms()
@@ -134,7 +121,7 @@ plot(loc[,1:2, drop = F], xlim = xr, ylim =yr, asp = 1, axes = FALSE, xlab = "",
 ximage::ximage(gmap, add = T)
 plot(claims, add = TRUE)
 
-lines(track, col = "hotpink")
+lines(ptrack, col = "hotpink")
 points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 ```
 
