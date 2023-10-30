@@ -99,7 +99,7 @@ pt <- tail(ptrack[!is.na(track[,1]) & !is.na(ptrack[,2]), ], 1L)
 
 n <- 30 * 24 * 60
 
-dat <- arrow::read_parquet("data-raw/nuyina_underway.parquet")
+dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
 
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
