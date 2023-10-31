@@ -221,9 +221,9 @@ op <- par(mfrow = n2mfrow(n))
 for(i in 1:n) {
 f <- vsicurl(vapply(assets[i,c("red", "green", "blue")], \(.x).x$href, ""))
 
-sf::gdal_utils("buildvrt", f, tf1 <- file.path("/vsimem", basename(tempfile(fileext = ".vrt"))), options = "-separate")
-sf::gdal_utils("translate", tf1, tf2 <- file.path("/vsimem", basename(tempfile(fileext = ".vrt"))), options = c("-outsize", "10%", "10%", "-scale", "-ot", "Byte"))
-sf::gdal_utils("nearblack", tf2, tf3 <- file.path("/vsimem",basename(tempfile(fileext = ".tif"))))
+sf::gdal_utils("buildvrt", f, tf1 <- tempfile(fileext = ".vrt"), options = "-separate")
+sf::gdal_utils("translate", tf1, tf2 <- tempfile(fileext = ".vrt"), options = c("-outsize", "10%", "10%", "-scale", "-ot", "Byte"))
+sf::gdal_utils("nearblack", tf2, tf3 <- tempfile(fileext = ".tif"))
 imrgb <- rast(tf3)
 plotRGB(imrgb)
 trackpts <- terra::project(cbind(dat$longitude, dat$latitude), to = crs(imrgb), from = "OGC:CRS84")
