@@ -23,7 +23,6 @@ c(73 + 30/60 + 30/3600,-(53 + 0 + 0/3600))))
 names(pl) <- c("x", "y")
 pl$name <- c("Macquarie Island", "Davis Station", "Casey Station", "Mawson Station", "Heard Island")
 ```
-
 # seaice.map
 
 <!-- badges: start -->
