@@ -25,7 +25,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install package for scan
-        run: Rscript -e 'install.packages(c("here", "stringr"), repos = "https://cran.rstudio.com/")'
+        run: Rscript -e 'install.packages(c("here", "stringr", "pkgdepends"), repos = "https://cran.rstudio.com/")'
 
 
       - uses: r-lib/actions/setup-pandoc@v2
