@@ -191,7 +191,7 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 
 Now with Sentinel
 
-```{r sentinel}
+```{r sentinel, eval=FALSE, include=FALSE}
 date <- format(Sys.Date()-74)
 ## note use of v1/ and particularly "sentinel-2-l2a"
 

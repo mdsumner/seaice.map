@@ -12,7 +12,7 @@ name: render-doc
 
 jobs:
   render-doc:
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
@@ -25,7 +25,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install package for scan
-        run: Rscript -e 'install.packages(c("here", "stringr", "pkgdepends"), repos = "https://cran.rstudio.com/")'
+        run: Rscript -e 'install.packages(c("here", "stringr"), repos = "https://cran.rstudio.com/")'
 
 
       - uses: r-lib/actions/setup-pandoc@v2
@@ -38,7 +38,7 @@ jobs:
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
 
       - name: Install package deps
-        run: Rscript -e 'pak::pak(c("arrow", "sf",  "terra", "here", "rmarkdown", "trip",  "maps", "countrycode", "tibble"))'
+        run: Rscript -e 'pak::pak(c("arrow",   "terra", "here", "rmarkdown", "trip",  "maps", "countrycode", "tibble"))'
 
       - name: Install package deps2
         run: Rscript -e 'pak::pak(c("hypertidy/spatial.datasources", "hypertidy/ximage", "hypertidy/vapour", "hypertidy/dsn"))'
