@@ -11,7 +11,7 @@ on:
 name: get-sentinel
 
 jobs:
-  render-doc:
+  sentinel:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -30,10 +30,6 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
-      - name: Install XQuartz on macOS
-        if: runner.os == 'macOS'
-        run: brew install gdal
-
       - name: Install package installer
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
 
@@ -44,9 +40,6 @@ jobs:
       - name: Get data
         run: Rscript -e 'source("data-raw/sentinel.R", echo = TRUE)'
 
-
-      - name: cleanup
-        run: rm README.html
 
 
 
