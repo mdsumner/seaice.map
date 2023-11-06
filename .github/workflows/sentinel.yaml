@@ -13,7 +13,7 @@ name: get-sentinel
 jobs:
   docker:
     runs-on: ubuntu-latest
-    container: rocker-org/geospatial:dev-osgeo
+    container: rocker/geospatial:dev-osgeo
     steps:
       - uses: actions/checkout@v3
 
