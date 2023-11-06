@@ -34,7 +34,7 @@ jobs:
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
 
       - name: Install package deps
-        run: Rscript -e 'pak::pak(c("arrow",   "terra", "sf""))'
+        run: Rscript -e 'pak::pak(c("arrow",   "terra", "sf"))'
 
 
       - name: Get data
