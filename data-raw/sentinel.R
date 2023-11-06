@@ -14,8 +14,8 @@ a1 <- js$features$assets[1,]
 a2 <- js$features$assets[2,]
 
 
-sf::gdal_utils("buildvrt",  c(a1$red$href, a1$green$href, a1$blue$href), af1 <- tempfile(fileext = ".vrt"), options = "-separate")
-sf::gdal_utils("buildvrt", c(a2$red$href, a2$green$href, a2$blue$href), af2 <- tempfile(fileext = ".vrt"), options = "-separate")
+sf::gdal_utils("buildvrt",  dsn::vsicurl(c(a1$red$href, a1$green$href, a1$blue$href)), af1 <- tempfile(fileext = ".vrt"), options = "-separate")
+sf::gdal_utils("buildvrt", dsn::vsicurl(c(a2$red$href, a2$green$href, a2$blue$href)), af2 <- tempfile(fileext = ".vrt"), options = "-separate")
 
 sf::gdal_utils("translate", af1, tf1 <- tempfile(fileext = ".vrt"), options = c( "-scale", "-ot", "Byte", "-projwin_srs", "OGC:CRS84", "-projwin", bbox[1], bbox[4], bbox[3], bbox[2]))
 sf::gdal_utils("translate", af2, tf2 <- tempfile(fileext = ".vrt"), options = c( "-scale", "-ot", "Byte", "-projwin_srs", "OGC:CRS84", "-projwin", bbox[1], bbox[4], bbox[3], bbox[2]))
