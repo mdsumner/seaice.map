@@ -19,7 +19,7 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2023-10-31 20:59:00 UTC"
+    #> [1] "2021-12-23 05:00:00 UTC" "2023-11-01 20:59:00 UTC"
     #> terra 1.7.55
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
@@ -47,7 +47,7 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$date_time_utc))
-#> [1] "2021-12-23 05:00:00 UTC" "2023-10-31 20:59:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2023-11-01 20:59:00 UTC"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -146,58 +146,6 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 ![](man/figures/README-zoom-1.png)<!-- -->
 
 Now with Sentinel
-
-``` r
-date <- format(Sys.Date()-74)
-## note use of v1/ and particularly "sentinel-2-l2a"
-
-dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
-dat <- tail(dat, 10000)
-pt <- as.matrix(tail(dat, 1)[c("longitude", "latitude")])
-bbox <- rep(pt, 2) + c(-1, -1, 1, 1) * 0.1
-
-x <- readLines(paste0("https://earth-search.aws.element84.com/v1/search?limit=500&collections=sentinel-2-l2a&datetime=", date, "T00:00:00Z%2F..&bbox=", paste0(bbox, collapse = ",")))
-js <- jsonlite::fromJSON(x)
-
-
-decimate <- function(x) {
-  template <- rast(x)
-  res(template) <- res(template) * 10
-  rast(lapply(x, project, y = template, by_util = TRUE))
-}
-library(terra)
-library(dsn)
-#> 
-#> Attaching package: 'dsn'
-#> The following objects are masked from 'package:terra':
-#> 
-#>     datatype, sds
-#im1 <- decimate(rast(vsicurl(js$features$assets$visual$href[1])))
-
-n <- 12L
-assets <- head(js$features$assets, n)
-n <- nrow(assets)
-if (n > 0) {
-op <- par(mfrow = n2mfrow(n))
-for(i in 1:n) {
-f <- vsicurl(vapply(assets[i,c("red", "green", "blue")], \(.x).x$href, ""))
-
-sf::gdal_utils("buildvrt", f, tf1 <- file.path("/vsimem", basename(tempfile(fileext = ".vrt"))), options = "-separate")
-sf::gdal_utils("translate", tf1, tf2 <- file.path("/vsimem", basename(tempfile(fileext = ".vrt"))), options = c("-outsize", "10%", "10%", "-scale", "-ot", "Byte"))
-sf::gdal_utils("nearblack", tf2, tf3 <- file.path("/vsimem",basename(tempfile(fileext = ".tif"))))
-imrgb <- rast(tf3)
-plotRGB(imrgb)
-trackpts <- terra::project(cbind(dat$longitude, dat$latitude), to = crs(imrgb), from = "OGC:CRS84")
-
-lines(trackpts, col = "hotpink")
-points(trackpts[nrow(trackpts), , drop = F], col = "hotpink")
-date <- as.Date(strsplit(basename(dirname(f[1])), "_")[[1]][3], "%Y%m%d")
-title(date)
-}
-}
-```
-
-![](man/figures/README-sentinel-1.png)<!-- -->
 
 ## Code of Conduct
 

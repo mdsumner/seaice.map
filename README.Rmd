@@ -58,6 +58,7 @@ pcrs <- attr(r, "projection")
 
 
 ximage::ximage(r, asp = 1, axes = FALSE)
+
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = pcrs, from = "OGC:CRS84"), pch = ".", col = "#777777")
 title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
 
@@ -188,53 +189,6 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 
 ```
 
-
-Now with Sentinel
-
-```{r sentinel, eval=FALSE, include=FALSE}
-date <- format(Sys.Date()-74)
-## note use of v1/ and particularly "sentinel-2-l2a"
-
-dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
-dat <- tail(dat, 10000)
-pt <- as.matrix(tail(dat, 1)[c("longitude", "latitude")])
-bbox <- rep(pt, 2) + c(-1, -1, 1, 1) * 0.1
-
-x <- readLines(paste0("https://earth-search.aws.element84.com/v1/search?limit=500&collections=sentinel-2-l2a&datetime=", date, "T00:00:00Z%2F..&bbox=", paste0(bbox, collapse = ",")))
-js <- jsonlite::fromJSON(x)
-
-
-decimate <- function(x) {
-  template <- rast(x)
-  res(template) <- res(template) * 10
-  rast(lapply(x, project, y = template, by_util = TRUE))
-}
-library(terra)
-library(dsn)
-#im1 <- decimate(rast(vsicurl(js$features$assets$visual$href[1])))
-
-n <- 12L
-assets <- head(js$features$assets, n)
-n <- nrow(assets)
-if (n > 0) {
-op <- par(mfrow = n2mfrow(n))
-for(i in 1:n) {
-f <- vsicurl(vapply(assets[i,c("red", "green", "blue")], \(.x).x$href, ""))
-
-sf::gdal_utils("buildvrt", f, tf1 <- tempfile(fileext = ".vrt"), options = "-separate")
-sf::gdal_utils("translate", tf1, tf2 <- tempfile(fileext = ".vrt"), options = c("-outsize", "10%", "10%", "-scale", "-ot", "Byte"))
-sf::gdal_utils("nearblack", tf2, tf3 <- tempfile(fileext = ".tif"))
-imrgb <- rast(tf3)
-plotRGB(imrgb)
-trackpts <- terra::project(cbind(dat$longitude, dat$latitude), to = crs(imrgb), from = "OGC:CRS84")
-
-lines(trackpts, col = "hotpink")
-points(trackpts[nrow(trackpts), , drop = F], col = "hotpink")
-date <- as.Date(strsplit(basename(dirname(f[1])), "_")[[1]][3], "%Y%m%d")
-title(date)
-}
-}
-```
 
 ## Code of Conduct
   
