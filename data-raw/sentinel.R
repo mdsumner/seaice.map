@@ -23,6 +23,8 @@ sf::gdal_utils("translate", af2, tf2 <- tempfile(fileext = ".vrt"), options = c(
 
 sf::gdal_utils("warp", c(tf1, tf2), tf3 <- tempfile(fileext = ".tif"))
 
+#sf::gdal_utils("nearblack", tf3, tf4 <- tempfile(fileext = ".tif"))
+
 #file.copy("/tmp/Rtmp8Lhndt/fileb54a6b0da05c.tif", "tf3.tif")
 #sf::gdal_utils("nearblack", tf2, tf3 <- tempfile(fileext = ".tif"))
 #imrgb <- rast("tf3.tif")

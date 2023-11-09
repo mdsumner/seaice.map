@@ -29,7 +29,7 @@ jobs:
         run: |
           git config --global user.name 'Michael Sumner'
           git config --global user.email 'mdsumner@gmail.com'
-          git add .
-          git commit -m 'refreshing data' || echo "No changes to commit"
+          git add data-raw/sentinel-image.tif
+          git commit -m 'commit new sentinel image' || echo "No changes to commit"
           git push || echo "No changes to commit"
 
