@@ -28,5 +28,5 @@ jobs:
       - name: Upload results
         uses: actions/upload-artifact@v3
         with:
-          name: results
-          path: file.tif
+          name: sentinel
+          path: sentinel-image.tif
