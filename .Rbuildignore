@@ -2,5 +2,6 @@
 ^\.Rproj\.user$
 ^\.github$
 ^README\.Rmd$
+
 ^data-raw$
 ^CODE_OF_CONDUCT\.md$
