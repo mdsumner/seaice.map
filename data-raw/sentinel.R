@@ -1,3 +1,4 @@
+library(terra)
 date <- format(Sys.Date()-12)
 ## note use of v1/ and particularly "sentinel-2-l2a"
 
@@ -27,6 +28,6 @@ sf::gdal_utils("warp", c(tf1, tf2), tf3 <- tempfile(fileext = ".tif"))
 #imrgb <- rast("tf3.tif")
 imrgb <- rast(tf3)
 trackpts <- terra::project(cbind(dat$longitude, dat$latitude), to = crs(imrgb), from = "OGC:CRS84")
-#plotRGB(imrgb)
+plotRGB(imrgb)
 writeRaster(imrgb, "data-raw/sentinel-image.tif", overwrite = TRUE)
-#lines(trackpts, col = "hotpink")
+lines(trackpts, col = "hotpink")
