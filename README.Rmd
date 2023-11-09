@@ -123,7 +123,7 @@ claims <- terra::project(terra::vect("data-raw/claims/claim_boundaries_ps.shp"),
 plot(claims, add = TRUE)
 
 map <- terra::vect("data-raw/CGAZ.fgb")
-plot(ptrack, type = "n", asp = 1, axes = F, xlab = "", ylab = "")
+plot(tail(ptrack, 10000), type = "n", asp = 1, axes = F, xlab = "", ylab = "")
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 #plotRGB(r, add = TRUE)
 ximage::ximage(r, add = TRUE)
