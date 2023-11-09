@@ -150,6 +150,13 @@ A sentinel-2-l2a image around the ship.
 
 ``` r
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
+r <- try(rast("/vsicurl/https://github.com/mdsumner/seaice.map/raw/main/data-raw/sentinel-image.tif"))
+#> Error : [rast] file does not exist: /vsicurl/https://github.com/mdsumner/seaice.map/raw/main/data-raw/sentinel-image.tif
+if (!inherits(r, "try-error")) {
+plotRGB(r)
+lines(ptrack, col = "hotpink")
+points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
+}
 ```
 
 ## Code of Conduct
