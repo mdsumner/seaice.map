@@ -25,8 +25,11 @@ jobs:
           source("data-raw/sentinel.R")
         shell: Rscript {0}
 
-      - name: Upload results
-        uses: actions/upload-artifact@v3
-        with:
-          name: sentinel
-          path: sentinel-image.tif
+      - name: Commit
+        run: |
+          git config --global user.name 'Michael Sumner'
+          git config --global user.email 'mdsumner@gmail.com'
+          git add .
+          git commit -m 'refreshing data' || echo "No changes to commit"
+          git push || echo "No changes to commit"
+

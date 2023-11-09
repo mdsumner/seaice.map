@@ -157,7 +157,7 @@ The point (and track if available) is the recent position of the [Nuyina researc
 Files in 'data-raw/' contain the actual metadata and scripts. This runs as a daily task on github actions. 
 
 
-Now zoom in on the ship some more. 
+Now zoom in on the ship some more.  This should just show coarse google imagery, with better Maxar imagery when near coastline.  
 
 ```{r zoom, fig.dim = c(9, 9)}
 loc <- ptrack[nrow(ptrack),,  drop = FALSE]
@@ -188,6 +188,15 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 
 
 ```
+
+
+A sentinel-2-l2a image around the ship. 
+
+```{r sentinel-zoom}
+## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
+```
+
+
 
 ## Code of Conduct
   

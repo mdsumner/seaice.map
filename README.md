@@ -19,7 +19,7 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "1970-01-01 00:00:00 UTC" "2023-11-06 08:59:00 UTC"
+    #> [1] "1970-01-01 00:00:00 UTC" "2023-11-09 00:59:00 UTC"
     #> terra 1.7.55
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
@@ -47,7 +47,7 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$date_time_utc))
-#> [1] "1970-01-01 00:00:00 UTC" "2023-11-06 08:59:00 UTC"
+#> [1] "1970-01-01 00:00:00 UTC" "2023-11-09 00:59:00 UTC"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -113,7 +113,8 @@ underway data that measures atmospheric and water properties.
 Files in ‘data-raw/’ contain the actual metadata and scripts. This runs
 as a daily task on github actions.
 
-Now zoom in on the ship some more.
+Now zoom in on the ship some more. This should just show coarse google
+imagery, with better Maxar imagery when near coastline.
 
 ``` r
 loc <- ptrack[nrow(ptrack),,  drop = FALSE]
@@ -144,6 +145,12 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 ```
 
 ![](man/figures/README-zoom-1.png)<!-- -->
+
+A sentinel-2-l2a image around the ship.
+
+``` r
+## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
+```
 
 ## Code of Conduct
 
