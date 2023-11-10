@@ -13,7 +13,6 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-"
 )
 op <- options(warn = -1)
-
 pl <- as.data.frame(rbind(
 c(158.93835,-54.49871), 
 c(77 + 58/60 + 3/3600,-(68 + 34/60 + 36/3600)),
