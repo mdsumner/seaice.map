@@ -6,7 +6,9 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 dat <- tail(dat, 10000)
 #dat <- dat[7031:9791, ]
 pt <- as.matrix(tail(dat, 1)[c("longitude", "latitude")])
-bbox <- rep(pt, 2) + c(-2, -2, 1, 1) * 0.1
+f <- 1/cos(pt[2] * pi/180)
+
+bbox <- rep(pt, 2) + c(-f, -1, f, 1) * 0.1
 
 x <- readLines(paste0("https://earth-search.aws.element84.com/v1/search?limit=500&collections=sentinel-2-l2a&datetime=", date, "T00:00:00Z%2F..&bbox=", paste0(bbox, collapse = ",")))
 js <- jsonlite::fromJSON(x)
