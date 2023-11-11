@@ -19,7 +19,7 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "1970-01-01 00:00:00 UTC" "2023-11-09 00:59:00 UTC"
+    #> [1] "2021-12-23 05:00:00 UTC" "2023-11-11 02:59:00 UTC"
     #> terra 1.7.55
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
@@ -47,7 +47,7 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$date_time_utc))
-#> [1] "1970-01-01 00:00:00 UTC" "2023-11-09 00:59:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2023-11-11 02:59:00 UTC"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -73,7 +73,7 @@ plot(claims, add = TRUE)
 ``` r
 
 map <- terra::vect("data-raw/CGAZ.fgb")
-plot(ptrack, type = "n", asp = 1, axes = F, xlab = "", ylab = "")
+plot(tail(ptrack, 10000), type = "n", asp = 1, axes = F, xlab = "", ylab = "")
 title(paste0(as.Date(range(dat$date_time_utc)),collapse = ","), col.main = "white")
 #plotRGB(r, add = TRUE)
 ximage::ximage(r, add = TRUE)
@@ -90,7 +90,7 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 1)
 
 vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
 which(vars %in% names(dat))
-#> [1] 6 7
+#> [1] 1 2 3 4 5 6 7
  for (i in seq_along(vars)) {
    bad <- is.na(dat[[vars[i]]])
    if (any(!bad)) {
@@ -100,7 +100,7 @@ which(vars %in% names(dat))
  }
 ```
 
-![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->
+![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->![](man/figures/README-traceplots-3.png)<!-- -->![](man/figures/README-traceplots-4.png)<!-- -->![](man/figures/README-traceplots-5.png)<!-- -->![](man/figures/README-traceplots-6.png)<!-- -->![](man/figures/README-traceplots-7.png)<!-- -->
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
@@ -149,15 +149,25 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 A sentinel-2-l2a image around the ship.
 
 ``` r
+dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
+print(range( dat$date_time_utc))
+#> [1] "2021-12-23 05:00:00 UTC" "2023-11-11 02:59:00 UTC"
+
+track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
-r <- try(rast("/vsicurl/https://github.com/mdsumner/seaice.map/raw/main/data-raw/sentinel-image.tif"))
-#> Error : [rast] file does not exist: /vsicurl/https://github.com/mdsumner/seaice.map/raw/main/data-raw/sentinel-image.tif
+r <- try(vapour::gdal_raster_data("data-raw/sentinel-image.tif", target_dim = c(1024, 0), bands = 1:3))
+
+
 if (!inherits(r, "try-error")) {
-plotRGB(r)
-lines(ptrack, col = "hotpink")
-points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
+  ptrack <- terra::project(as.matrix(track), to = attr(r, "projection"), from = "OGC:CRS84")
+for (i in 1:3) r[[i]][is.na(r[[i]])] <- 0
+ximage::ximage(r, asp = 1)
+lines(tail(ptrack, 5000), col = "hotpink")
+#points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 }
 ```
+
+![](man/figures/README-sentinel-zoom-1.png)<!-- -->
 
 ## Code of Conduct
 
