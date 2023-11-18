@@ -19,8 +19,8 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2023-11-11 02:59:00 UTC"
-    #> terra 1.7.55
+    #> [1] "2021-12-23 05:00:00 UTC" "2023-11-18 17:59:00 UTC"
+    #> terra 1.7.60
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
@@ -47,7 +47,7 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$date_time_utc))
-#> [1] "2021-12-23 05:00:00 UTC" "2023-11-11 02:59:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2023-11-18 17:59:00 UTC"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -151,11 +151,15 @@ A sentinel-2-l2a image around the ship.
 ``` r
 dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
 print(range( dat$date_time_utc))
-#> [1] "2021-12-23 05:00:00 UTC" "2023-11-11 02:59:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2023-11-18 17:59:00 UTC"
 
 track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
 r <- try(vapour::gdal_raster_data("data-raw/sentinel-image.tif", target_dim = c(1024, 0), bands = 1:3))
+
+for (i in seq_along(r)) {
+  r[[i]][is.na(r[[i]])] <- 0
+}
 
 
 if (!inherits(r, "try-error")) {
