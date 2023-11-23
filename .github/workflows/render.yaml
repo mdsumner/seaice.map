@@ -42,7 +42,7 @@ jobs:
         run: Rscript -e 'pak::pak(c("here", "trip", "maps", "rmarkdown", "countrycode", "arrow"))'
 
       - name: Install package deps2
-        run: Rscript -e 'pak::pak(c("hypertidy/spatial.datasources", "hypertidy/ximage", "hypertidy/vapour", "hypertidy/dsn"))'
+        run: Rscript -e 'pak::pak(c("hypertidy/sds", "hypertidy/ximage", "hypertidy/vapour", "hypertidy/dsn"))'
 
       - name: Get data
         run: Rscript -e 'source("data-raw/get-data.R", echo = TRUE)'

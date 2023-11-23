@@ -165,8 +165,8 @@ xr <- loc[1,1] + c(-1000, 1000) * 34
 yr <- loc[1,2] + c(-1000, 1000)  * 34
 
 
-goog <- spatial.datasources::wms_googlehybrid_tms()
-esri <- spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms()
+goog <- sds::wms_googlehybrid_tms()
+esri <- sds::wms_arcgis_mapserver_ESRI.WorldImagery_tms()
 gmap <- vapour::gdal_raster_image(goog, target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 if (length(unique(gmap[[1]])) < 800) {
 
