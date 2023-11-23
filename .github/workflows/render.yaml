@@ -39,7 +39,7 @@ jobs:
         run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
 
       - name: Install package deps
-        run: Rscript -e 'pak::pak(c("here", "trip", "rmarkdown", "countrycode", "arrow"))'
+        run: Rscript -e 'pak::pak(c("here", "trip", "maps", "rmarkdown", "countrycode", "arrow"))'
 
       - name: Install package deps2
         run: Rscript -e 'pak::pak(c("hypertidy/spatial.datasources", "hypertidy/ximage", "hypertidy/vapour", "hypertidy/dsn"))'
