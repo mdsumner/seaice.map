@@ -19,8 +19,8 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2023-11-18 17:59:00 UTC"
-    #> terra 1.7.60
+    #> [1] "2021-12-23 05:00:00 UTC" "2023-12-01 00:59:00 UTC"
+    #> terra 1.7.62
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
@@ -47,7 +47,7 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$date_time_utc))
-#> [1] "2021-12-23 05:00:00 UTC" "2023-11-18 17:59:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2023-12-01 00:59:00 UTC"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$date_time_utc <- as.POSIXct(dat$date_time_utc, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -124,8 +124,8 @@ xr <- loc[1,1] + c(-1000, 1000) * 34
 yr <- loc[1,2] + c(-1000, 1000)  * 34
 
 
-goog <- spatial.datasources::wms_googlehybrid_tms()
-esri <- spatial.datasources::wms_arcgis_mapserver_ESRI.WorldImagery_tms()
+goog <- sds::wms_googlehybrid_tms()
+esri <- sds::wms_arcgis_mapserver_ESRI.WorldImagery_tms()
 gmap <- vapour::gdal_raster_image(goog, target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 if (length(unique(gmap[[1]])) < 800) {
 
@@ -146,12 +146,13 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 
 ![](man/figures/README-zoom-1.png)<!-- -->
 
-A sentinel-2-l2a image around the ship.
+A sentinel-2-l2a image around the ship, or at least the last one that
+worked where the ship was at the time.
 
 ``` r
 dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
 print(range( dat$date_time_utc))
-#> [1] "2021-12-23 05:00:00 UTC" "2023-11-18 17:59:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2023-12-01 00:59:00 UTC"
 
 track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP

@@ -188,7 +188,7 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 ```
 
 
-A sentinel-2-l2a image around the ship. 
+A sentinel-2-l2a image around the ship, or at least the last one that worked where the ship was at the time. 
 
 ```{r sentinel-zoom}
 dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")

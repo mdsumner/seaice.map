@@ -10,11 +10,15 @@ f <- 1/cos(pt[2] * pi/180)
 
 bbox <- rep(pt, 2) + c(-f, -1, f, 1) * 0.1
 
-x <- readLines(paste0("https://earth-search.aws.element84.com/v1/search?limit=500&collections=sentinel-2-l2a&datetime=", date, "T00:00:00Z%2F..&bbox=", paste0(bbox, collapse = ",")))
+
+## bad gateway? limit to 100 ish
+## https://forum.earthdata.nasa.gov/viewtopic.php?t=4801
+x <- readLines(paste0("https://earth-search.aws.element84.com/v1/search?limit=50&collections=sentinel-2-l2a&datetime=", date, "T00:00:00Z%2F..&bbox=", paste0(bbox, collapse = ",")))
 js <- jsonlite::fromJSON(x)
 
-a1 <- js$features$assets[1,]
-a2 <- js$features$assets[2,]
+if (!is.null(js$features$assets) && dim(js$features$assets) [2L] > 1) {
+  a1 <- js$features$assets[1,]
+  a2 <- js$features$assets[2,]
 
 
 sf::gdal_utils("buildvrt",  dsn::vsicurl(c(a1$red$href, a1$green$href, a1$blue$href)), af1 <- tempfile(fileext = ".vrt"), options = "-separate")
@@ -35,3 +39,4 @@ trackpts <- terra::project(cbind(dat$longitude, dat$latitude), to = crs(imrgb), 
 #plotRGB(imrgb)
 writeRaster(imrgb, "data-raw/sentinel-image.tif", overwrite = TRUE)
 #lines(trackpts, col = "hotpink")
+}
