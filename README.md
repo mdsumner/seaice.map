@@ -26,6 +26,8 @@ centre. (we’ll fix this up)
     #>  Running with:3.12.1-CAPI-1.18.1
     #> 
     #> You should reinstall package 'terra'
+    #> Float64
+    #> 0
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
@@ -35,6 +37,8 @@ we’d like to think about East Antarctica).
 ``` r
 library(terra)
 r <- vapour::gdal_raster_data("data-raw/seaice.png", bands = 1:3)
+#> Float64
+#> 0
 pcrs <- attr(r, "projection")
 ximage::ximage(r, asp = 1, axes = FALSE)
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = pcrs, from = "OGC:CRS84"), pch = ".", col = "#777777")
@@ -132,6 +136,8 @@ yr <- loc[1,2] + c(-1000, 1000)  * 34
 goog <- sds::wms_googlehybrid_tms()
 esri <- sds::wms_arcgis_mapserver_ESRI.WorldImagery_tms()
 gmap <- vapour::gdal_raster_image(goog, target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
+#> Byte
+#> 0
 if (length(unique(gmap[[1]])) < 800) {
 
 xr <- loc[1,1] + c(-1000, 1000) * 800
@@ -162,6 +168,8 @@ print(range( dat$date_time_utc))
 track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
 r <- try(vapour::gdal_raster_data("data-raw/sentinel-image.tif", target_dim = c(1024, 0), bands = 1:3))
+#> Float64
+#> 0
 
 for (i in seq_along(r)) {
   r[[i]][is.na(r[[i]])] <- 0
