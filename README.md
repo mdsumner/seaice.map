@@ -20,7 +20,7 @@ First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
     #> [1] "2021-12-23 05:00:00 UTC" "2024-01-24 02:59:00 UTC"
-    #> terra 1.7.65
+    #> terra 1.7.71
     #> WARNING: different compile-time and run-time versions of GEOS
     #> Compiled with:3.10.2-CAPI-1.16.0
     #>  Running with:3.12.1-CAPI-1.18.1
