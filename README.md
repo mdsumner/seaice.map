@@ -19,7 +19,7 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2024-02-21 12:55:00 UTC"
+    #> [1] "2021-12-23 05:00:00 UTC" "2024-02-22 01:14:00 UTC"
     #> terra 1.7.71
     #> WARNING: different compile-time and run-time versions of GEOS
     #> Compiled with:3.10.2-CAPI-1.16.0
@@ -56,7 +56,7 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-02-21 12:55:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2024-02-22 01:14:00 UTC"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$datetime <- as.POSIXct(dat$datetime, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -145,8 +145,6 @@ yr <- loc[1,2] + c(-1000, 1000) * 800
 gmap <- vapour::gdal_raster_image(esri, target_ext = c(xr, yr), target_crs = pcrs, target_dim = c(1024, 0))
 #length(unique(gmap[[1]]))
 }
-#> Byte
-#> 0
 
 
 plot(loc[,1:2, drop = F], xlim = xr, ylim =yr, asp = 1, axes = FALSE, xlab = "", ylab = "")
@@ -165,7 +163,7 @@ worked where the ship was at the time.
 ``` r
 dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-02-21 12:55:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2024-02-22 01:14:00 UTC"
 
 track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
