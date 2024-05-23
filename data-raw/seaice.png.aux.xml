@@ -6,7 +6,7 @@
   </Metadata>
   <PAMRasterBand band="1">
     <Description>red</Description>
-    <NoDataValue le_hex_equiv="000000000000F87F">nan</NoDataValue>
+    <NoDataValue>4.29496729500000E+09</NoDataValue>
     <Metadata>
       <MDI key="STATISTICS_MAXIMUM">247</MDI>
       <MDI key="STATISTICS_MEAN">-9999</MDI>
@@ -16,7 +16,7 @@
   </PAMRasterBand>
   <PAMRasterBand band="2">
     <Description>green</Description>
-    <NoDataValue le_hex_equiv="000000000000F87F">nan</NoDataValue>
+    <NoDataValue>4.29496729500000E+09</NoDataValue>
     <Metadata>
       <MDI key="STATISTICS_MAXIMUM">252</MDI>
       <MDI key="STATISTICS_MEAN">-9999</MDI>
@@ -26,7 +26,7 @@
   </PAMRasterBand>
   <PAMRasterBand band="3">
     <Description>blue</Description>
-    <NoDataValue le_hex_equiv="000000000000F87F">nan</NoDataValue>
+    <NoDataValue>4.29496729500000E+09</NoDataValue>
     <Metadata>
       <MDI key="STATISTICS_MAXIMUM">255</MDI>
       <MDI key="STATISTICS_MEAN">-9999</MDI>
@@ -36,7 +36,7 @@
   </PAMRasterBand>
   <PAMRasterBand band="4">
     <Description>alpha</Description>
-    <NoDataValue le_hex_equiv="000000000000F87F">nan</NoDataValue>
+    <NoDataValue>4.29496729500000E+09</NoDataValue>
     <Metadata>
       <MDI key="STATISTICS_MAXIMUM">255</MDI>
       <MDI key="STATISTICS_MEAN">-9999</MDI>
