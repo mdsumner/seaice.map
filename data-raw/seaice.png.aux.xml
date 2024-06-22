@@ -8,7 +8,7 @@
     <Description>red</Description>
     <NoDataValue>4.29496729500000E+09</NoDataValue>
     <Metadata>
-      <MDI key="STATISTICS_MAXIMUM">233</MDI>
+      <MDI key="STATISTICS_MAXIMUM">247</MDI>
       <MDI key="STATISTICS_MEAN">-9999</MDI>
       <MDI key="STATISTICS_MINIMUM">0</MDI>
       <MDI key="STATISTICS_STDDEV">-9999</MDI>
@@ -18,7 +18,7 @@
     <Description>green</Description>
     <NoDataValue>4.29496729500000E+09</NoDataValue>
     <Metadata>
-      <MDI key="STATISTICS_MAXIMUM">203</MDI>
+      <MDI key="STATISTICS_MAXIMUM">252</MDI>
       <MDI key="STATISTICS_MEAN">-9999</MDI>
       <MDI key="STATISTICS_MINIMUM">0</MDI>
       <MDI key="STATISTICS_STDDEV">-9999</MDI>
@@ -28,7 +28,7 @@
     <Description>blue</Description>
     <NoDataValue>4.29496729500000E+09</NoDataValue>
     <Metadata>
-      <MDI key="STATISTICS_MAXIMUM">119</MDI>
+      <MDI key="STATISTICS_MAXIMUM">255</MDI>
       <MDI key="STATISTICS_MEAN">-9999</MDI>
       <MDI key="STATISTICS_MINIMUM">0</MDI>
       <MDI key="STATISTICS_STDDEV">-9999</MDI>
