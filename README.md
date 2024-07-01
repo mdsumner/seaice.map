@@ -19,13 +19,8 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2024-07-01 01:18:00 UTC"
+    #> [1] "2021-12-23 05:00:00 UTC" "2024-07-01 06:56:00 UTC"
     #> terra 1.7.78
-    #> WARNING: different compile-time and run-time versions of GEOS
-    #> Compiled with:3.10.2-CAPI-1.16.0
-    #>  Running with:3.12.2-CAPI-1.18.2
-    #> 
-    #> You should reinstall package 'terra'
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
@@ -52,7 +47,7 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-07-01 01:18:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2024-07-01 06:56:00 UTC"
 ```
 
 ``` r
@@ -85,11 +80,15 @@ plot(tail(ptrack, 10000), type = "n", asp = 1, axes = F, xlab = "", ylab = "")
 title(paste0(as.Date(range(dat$datetime)),collapse = ","), col.main = "white")
 #plotRGB(r, add = TRUE)
 ximage::ximage(r, add = TRUE)
-lines(ptrack, col = "hotpink")
+lines(tail(ptrack, 4000), col = "hotpink")
 plot(terra::project(map, pcrs), add = TRUE, border = "#777777")
 
 plot(claims, add = TRUE)
 points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 1)
+
+pt_recent <- tail(ptrack, 1000)
+lines(pt_recent, lwd = 3, col = "green")
+points(tail(pt_recent, 1), pch = "X", cex = 2, col = "white")
 ```
 
 ![](man/figures/README-example-2.png)<!-- -->
@@ -163,7 +162,7 @@ worked where the ship was at the time.
 ``` r
 dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-07-01 01:18:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2024-07-01 06:56:00 UTC"
 ```
 
 ``` r
