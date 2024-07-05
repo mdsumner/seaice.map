@@ -12,7 +12,8 @@ name: refresh-data
 
 jobs:
   refresh-data:
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
+    container: mdsumner/hypertidy:main
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
@@ -30,24 +31,24 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
-      - name: Install XQuartz on macOS
-        if: runner.os == 'macOS'
-        run: brew install gdal
+      # - name: Install XQuartz on macOS
+      #   if: runner.os == 'macOS'
+      #   run: brew install gdal
 
-      - name: Install package installer
-        run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
+      # - name: Install package installer
+      #   run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
 
-      - name: Install package deps
-        run: Rscript -e 'pak::pak(c("arrow",  "terra", "here", "dplyr", "trip", "rmarkdown",  "maps", "countrycode"))'
+      # - name: Install package deps
+      #   run: Rscript -e 'pak::pak(c("arrow",  "terra", "here", "dplyr", "trip", "rmarkdown",  "maps", "countrycode"))'
 
-      - name: Install package deps
-        run: Rscript -e 'pak::pak(c("hypertidy/spatial.datasources", "hypertidy/vapour"))'
+      # - name: Install package deps
+      #   run: Rscript -e 'pak::pak(c("hypertidy/spatial.datasources", "hypertidy/vapour"))'
 
       - name: Install bowerbird
         run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list"))'
 
-      - name: Install blueant
-        run: Rscript -e 'pak::pak(c("AustralianAntarcticDivision/blueant"))'
+     # - name: Install blueant
+    #    run: Rscript -e 'pak::pak(c("AustralianAntarcticDivision/blueant"))'
 
       - name: Get update list
         run: Rscript -e 'source("data-raw/list_ice_files.R", echo = TRUE)'
