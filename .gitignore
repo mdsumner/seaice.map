@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.Rdata
+.httr-oauth
+.DS_Store
+gdalwmscache
+data-raw/sentinel-image.tif
+data-raw/nuyina_underway.parquet
+data-raw/nuyina_x4.kmz
