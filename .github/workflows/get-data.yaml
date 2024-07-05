@@ -25,8 +25,8 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Install package for scan
-        run: Rscript -e 'install.packages(c("here", "stringr"), repos = "https://cran.rstudio.com/")'
+     # - name: Install package for scan
+      #  run: Rscript -e 'install.packages(c("here", "stringr"), repos = "https://cran.rstudio.com/")'
 
 
       - uses: r-lib/actions/setup-pandoc@v2
@@ -44,8 +44,8 @@ jobs:
       # - name: Install package deps
       #   run: Rscript -e 'pak::pak(c("hypertidy/spatial.datasources", "hypertidy/vapour"))'
 
-      - name: Install bowerbird
-        run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list"))'
+     # - name: Install bowerbird
+    #    run: Rscript -e 'pak::pak(c("mdsumner/bowerbird@dry-run-list"))'
 
      # - name: Install blueant
     #    run: Rscript -e 'pak::pak(c("AustralianAntarcticDivision/blueant"))'
