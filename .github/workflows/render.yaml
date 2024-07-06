@@ -2,7 +2,7 @@
 
 on:
   schedule:
-    - cron: '0 1,13 * * *'
+    - cron: '37, * * * *'
   push:
     branches: [main]
   pull_request:
