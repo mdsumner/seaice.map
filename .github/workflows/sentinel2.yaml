@@ -13,13 +13,13 @@ name: get-sentinel
 jobs:
   docker:
     runs-on: ubuntu-latest
-    container: rocker/geospatial:dev-osgeo
+    container: mdsumner/hypertidy:main
     steps:
       - uses: actions/checkout@v3
 
-      - run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
+     # - run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
 
-      - run: Rscript -e 'pak::pak(c("hypertidy/dsn"))'
+      #- run: Rscript -e 'pak::pak(c("hypertidy/dsn"))'
 
       - run: |
           source("data-raw/sentinel.R")
