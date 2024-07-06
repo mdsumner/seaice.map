@@ -1,36 +1,30 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
-on:
-  schedule:
-    - cron: '0 2,14 * * *'
-  push:
-    branches: [main, sentinel]
-  pull_request:
-    branches: [main]
-
-name: get-sentinel
-
-jobs:
-  docker:
-    runs-on: ubuntu-latest
-    container: mdsumner/hypertidy:main
-    steps:
-      - uses: actions/checkout@v3
-
-     # - run: Rscript -e 'install.packages(c("pak"), repos = "https://cran.rstudio.com/")'
-
-      #- run: Rscript -e 'pak::pak(c("hypertidy/dsn"))'
-
-      - run: |
-          source("data-raw/sentinel.R")
-        shell: Rscript {0}
-
-      - name: Commit
-        run: |
-          git config --global user.name 'Michael Sumner'
-          git config --global user.email 'mdsumner@gmail.com'
-          git config --global --add safe.directory '*'
-          git add data-raw/sentinel-image.tif
-          git commit -m 'commit new sentinel image' || echo "No changes to commit"
-          git push || echo "No changes to commit"
-
+# on:
+#   schedule:
+#     - cron: '0 2,14 * * *'
+#   push:
+#     branches: [main, sentinel]
+#   pull_request:
+#     branches: [main]
+#
+# name: get-sentinel
+#
+# jobs:
+#   docker:
+#     runs-on: ubuntu-latest
+#     container: mdsumner/hypertidy:main
+#     steps:
+#       - uses: actions/checkout@v3
+#
+#       - run: |
+#           source("data-raw/sentinel.R")
+#         shell: Rscript {0}
+#
+#       - name: Commit
+#         run: |
+#           git config --global user.name 'Michael Sumner'
+#           git config --global user.email 'mdsumner@gmail.com'
+#           git config --global --add safe.directory '*'
+#           git add data-raw/sentinel-image.tif
+#           git commit -m 'commit new sentinel image' || echo "No changes to commit"
+#           git push || echo "No changes to commit"
+#

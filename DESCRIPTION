@@ -1,6 +1,6 @@
 Package: seaice.map
 Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9010
+Version: 0.0.1
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -12,3 +12,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 URL: https://github.com/mdsumner/seaice.map
 BugReports: https://github.com/mdsumner/seaice.map/issues
+Imports: 
+    stringr,
+    vapour
