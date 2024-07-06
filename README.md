@@ -20,6 +20,7 @@ First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
     #> [1] "2021-12-23 05:00:00 UTC" "2024-07-06 12:56:00 UTC"
+    #> terra 1.7.78
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
@@ -75,19 +76,34 @@ plot(claims, add = TRUE)
 ``` r
 
 map <- terra::vect("data-raw/CGAZ.fgb")
-plot(tail(ptrack, 10000), type = "n", asp = 1, axes = F, xlab = "", ylab = "")
+
+
+
+ptrack0 <- terra::project(as.matrix(track), to = pcrs0, from = pcrs)
+plot(tail(ptrack0, 10000), type = "n", asp = 1, axes = F, xlab = "", ylab = "")
 title(paste0(as.Date(range(dat$datetime)),collapse = ","), col.main = "white")
 #plotRGB(r, add = TRUE)
-ximage::ximage(r, add = TRUE)
-lines(tail(ptrack, 4000), col = "hotpink")
-plot(terra::project(map, pcrs), add = TRUE, border = "#777777")
+ximage::ximage(r0, add = TRUE)
+lines(tail(ptrack0, 4000), col = "hotpink")
+plot(terra::project(map, pcrs0), add = TRUE, border = "#777777")
 
-plot(claims, add = TRUE)
+plot(terra::project(claims, pcrs0), add = TRUE)
+pl[c("X", "Y")] <- terra::project(cbind(pl$x, pl$y), to = pcrs0, from = "OGC:CRS84")
 points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 1)
 
-pt_recent <- tail(ptrack, 1000)
+pt_recent <- tail(ptrack0, 1000)
 lines(pt_recent, lwd = 3, col = "green")
 points(tail(pt_recent, 1), pch = "X", cex = 2, col = "white")
+rr <- diff(par("usr"))[c(1, 3)]
+if (rr[1] > rr[2]) {
+  dm <- as.integer(c(1, rr[2]/rr[1]) * 1024)
+} else {
+  dm <- as.integer(c(1, rr[1]/rr[2]) * 1024)
+}
+cont <- terra::project(terra::rast("/vsicurl/https://gebco2023.s3.valeria.science/gebco_2023_land_cog.tif"), 
+               terra::rast(terra::ext(par("usr")), ncols = dm[1], nrows = dm[2], crs = pcrs0))
+cont[cont > -10] <- NA
+contour(cont, add = TRUE, col = "lightgrey", breaks = quantile(na.omit(values(cont)[,1]), seq(0.1, 1, by = 10)))
 ```
 
 ![](man/figures/README-example-2.png)<!-- -->
