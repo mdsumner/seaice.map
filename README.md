@@ -19,7 +19,7 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2024-07-07 18:54:00 UTC"
+    #> [1] "2021-12-23 05:00:00 UTC" "2024-07-07 19:54:00 UTC"
     #> terra 1.7.78
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
@@ -47,7 +47,7 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-07-07 18:54:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2024-07-07 19:54:00 UTC"
 ```
 
 ``` r
@@ -177,7 +177,7 @@ worked where the ship was at the time.
 ``` r
 dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-07-07 18:54:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2024-07-07 19:54:00 UTC"
 ```
 
 ``` r
