@@ -48,9 +48,6 @@ dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$datetime))
 #> [1] "2021-12-23 05:00:00 UTC" "2024-07-08 05:17:00 UTC"
-```
-
-``` r
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$datetime <- as.POSIXct(dat$datetime, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -113,9 +110,6 @@ contour(cont, add = TRUE, col = "lightgrey", breaks = quantile(na.omit(values(co
 vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
 which(vars %in% names(dat))
 #> [1] 3 6 7
-```
-
-``` r
  for (i in seq_along(vars)) {
    bad <- is.na(dat[[vars[i]]])
    if (any(!bad)) {
@@ -178,9 +172,6 @@ worked where the ship was at the time.
 dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
 print(range( dat$datetime))
 #> [1] "2021-12-23 05:00:00 UTC" "2024-07-08 05:17:00 UTC"
-```
-
-``` r
 
 track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
