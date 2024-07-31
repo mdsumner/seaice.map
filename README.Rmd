@@ -22,6 +22,26 @@ c(110 + 31/60 + 36/3600,-(66 + 16/60 + 57/3600)),
 c(73 + 30/60 + 30/3600,-(53 + 0 + 0/3600))))
 names(pl) <- c("x", "y")
 pl$name <- c("Macquarie Island", "Davis Station", "Casey Station", "Mawson Station", "Heard Island")
+## copied from nuyina.map
+nuyina_underway <- function(mintime) {
+
+  uwy0 <- cached_underway()
+  latest <- format(max(uwy0$datetime), "%Y-%m-%dT%H:%M:%SZ")
+  uwy <- vapour::vapour_read_fields("WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities",
+                                    sql = glue::glue(query1 <- "SELECT * FROM \"underway:nuyina_underway\" WHERE datetime > '{latest}'"))
+  #browser()
+  uwy1 <- tibble::as_tibble(uwy)
+  if (!missing(mintime)) {
+    uwy0 <- dplyr::filter(uwy0, datetime >= mintime)
+    uwy1 <-  dplyr::filter(uwy1, datetime >= mintime)
+  }
+  dplyr::bind_rows(uwy0, uwy1)
+}
+
+
+cached_underway <- function() {
+  arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
+}
 ```
 # seaice.map
 
@@ -41,7 +61,7 @@ First, a modified map of the subsequent one to put the ship in the centre.  (we'
 ```{r pivot-map, fig.dim = c(6, 14.4), results = "show", echo=FALSE}
 n <- 30 * 24 * 60
 
-dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
+dat <- nuyina_underway()
 print(range( dat$datetime))
 dat <- tail(dat, n)
 
@@ -96,7 +116,7 @@ pt <- tail(ptrack[!is.na(track[,1]) & !is.na(ptrack[,2]), ], 1L)
 
 n <- 30 * 24 * 60
 
-dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
+dat <- nuyina_underway()
 
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
@@ -212,7 +232,7 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
 A sentinel-2-l2a image around the ship, or at least the last one that worked where the ship was at the time. 
 
 ```{r sentinel-zoom, fig.dim = c(14, 14)}
-dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
+dat <- nuyina_underway()
 print(range( dat$datetime))
 
 track <- cbind(dat$longitude, dat$latitude)
