@@ -1,8 +1,8 @@
 
 
 on:
-  schedule:
-    - cron: '45 * * * *'
+ # schedule:
+ #   - cron: '45 * * * *'
   push:
     branches: [main]
   pull_request:
