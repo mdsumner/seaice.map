@@ -19,8 +19,8 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2024-07-28 12:56:00 UTC"
-    #> terra 1.7.78
+    #> [1] "2021-12-23 05:00:00 UTC" "2024-08-19 21:56:00 UTC"
+    #> terra 1.7.81
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
@@ -42,12 +42,15 @@ pt <- tail(ptrack[!is.na(track[,1]) & !is.na(ptrack[,2]), ], 1L)
 
 n <- 30 * 24 * 60
 
-dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
+dat <- nuyina_underway()
 
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-07-28 12:56:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2024-08-19 21:57:00 UTC"
+```
+
+``` r
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$datetime <- as.POSIXct(dat$datetime, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -91,6 +94,11 @@ points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 1)
 pt_recent <- tail(ptrack0, 1000)
 lines(pt_recent, lwd = 3, col = "green")
 points(tail(pt_recent, 1), pch = "X", cex = 2, col = "white")
+```
+
+![](man/figures/README-example-2.png)<!-- -->
+
+``` r
 rr <- diff(par("usr"))[c(1, 3)]
 if (rr[1] > rr[2]) {
   dm <- as.integer(c(1, rr[2]/rr[1]) * 1024)
@@ -100,16 +108,17 @@ if (rr[1] > rr[2]) {
 cont <- terra::project(terra::rast("/vsicurl/https://gebco2023.s3.valeria.science/gebco_2023_land_cog.tif"), 
                terra::rast(terra::ext(par("usr")), ncols = dm[1], nrows = dm[2], crs = pcrs0))
 cont[cont > -10] <- NA
-contour(cont, add = TRUE, col = "lightgrey", breaks = quantile(na.omit(values(cont)[,1]), seq(0.1, 1, by = 10)))
+try(contour(cont, add = TRUE, col = "lightgrey", breaks = quantile(na.omit(values(cont)[,1]), seq(0.1, 1, by = 10))), silent = TRUE)
 ```
-
-![](man/figures/README-example-2.png)<!-- -->
 
 ``` r
 
 vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
 which(vars %in% names(dat))
 #> [1] 3 6 7
+```
+
+``` r
  for (i in seq_along(vars)) {
    bad <- is.na(dat[[vars[i]]])
    if (any(!bad)) {
@@ -169,9 +178,12 @@ A sentinel-2-l2a image around the ship, or at least the last one that
 worked where the ship was at the time.
 
 ``` r
-dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
+dat <- nuyina_underway()
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-07-28 12:56:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2024-08-19 21:57:00 UTC"
+```
+
+``` r
 
 track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP

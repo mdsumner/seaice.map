@@ -168,7 +168,7 @@ if (rr[1] > rr[2]) {
 cont <- terra::project(terra::rast("/vsicurl/https://gebco2023.s3.valeria.science/gebco_2023_land_cog.tif"), 
                terra::rast(terra::ext(par("usr")), ncols = dm[1], nrows = dm[2], crs = pcrs0))
 cont[cont > -10] <- NA
-contour(cont, add = TRUE, col = "lightgrey", breaks = quantile(na.omit(values(cont)[,1]), seq(0.1, 1, by = 10)))
+try(contour(cont, add = TRUE, col = "lightgrey", breaks = quantile(na.omit(values(cont)[,1]), seq(0.1, 1, by = 10))), silent = TRUE)
 
 
 ```
