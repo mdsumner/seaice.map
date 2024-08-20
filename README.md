@@ -19,8 +19,8 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2024-08-19 21:56:00 UTC"
-    #> terra 1.7.81
+    #> [1] "2021-12-23 05:00:00 UTC" "2024-08-20 12:07:00 UTC"
+    #> terra 1.7.78
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
@@ -47,10 +47,7 @@ dat <- nuyina_underway()
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-08-19 21:57:00 UTC"
-```
-
-``` r
+#> [1] "2021-12-23 05:00:00 UTC" "2024-08-20 12:08:00 UTC"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$datetime <- as.POSIXct(dat$datetime, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -116,9 +113,6 @@ try(contour(cont, add = TRUE, col = "lightgrey", breaks = quantile(na.omit(value
 vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
 which(vars %in% names(dat))
 #> [1] 3 6 7
-```
-
-``` r
  for (i in seq_along(vars)) {
    bad <- is.na(dat[[vars[i]]])
    if (any(!bad)) {
@@ -180,10 +174,7 @@ worked where the ship was at the time.
 ``` r
 dat <- nuyina_underway()
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2024-08-19 21:57:00 UTC"
-```
-
-``` r
+#> [1] "2021-12-23 05:00:00 UTC" "2024-08-20 12:08:00 UTC"
 
 track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
