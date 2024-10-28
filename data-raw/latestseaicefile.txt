@@ -1,3 +1,3 @@
-2024-10-26
+2024-10-27
 https://noaadata.apps.nsidc.org/NOAA/G02135/north/daily/geotiff/2024/10_Oct
 https://noaadata.apps.nsidc.org/NOAA/G02135/south/daily/geotiff/2024/10_Oct
