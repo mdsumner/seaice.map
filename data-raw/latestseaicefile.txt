@@ -1,3 +1,3 @@
-2024-11-25
+2024-11-26
 https://noaadata.apps.nsidc.org/NOAA/G02135/north/daily/geotiff/2024/11_Nov
 https://noaadata.apps.nsidc.org/NOAA/G02135/south/daily/geotiff/2024/11_Nov
