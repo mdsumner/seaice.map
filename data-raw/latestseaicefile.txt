@@ -1,3 +1,3 @@
-2025-02-09
+2025-02-10
 https://noaadata.apps.nsidc.org/NOAA/G02135/north/daily/geotiff/2025/02_Feb
 https://noaadata.apps.nsidc.org/NOAA/G02135/south/daily/geotiff/2025/02_Feb
