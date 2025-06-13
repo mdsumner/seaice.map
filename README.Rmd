@@ -22,26 +22,7 @@ c(110 + 31/60 + 36/3600,-(66 + 16/60 + 57/3600)),
 c(73 + 30/60 + 30/3600,-(53 + 0 + 0/3600))))
 names(pl) <- c("x", "y")
 pl$name <- c("Macquarie Island", "Davis Station", "Casey Station", "Mawson Station", "Heard Island")
-## copied from nuyina.map
-nuyina_underway <- function(mintime) {
-
-  uwy0 <- cached_underway()
-  latest <- format(max(uwy0$datetime), "%Y-%m-%dT%H:%M:%SZ")
-  uwy <- vapour::vapour_read_fields("WFS:https://data.aad.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetCapabilities",
-                                    sql = glue::glue(query1 <- "SELECT * FROM \"underway:nuyina_underway\" WHERE datetime > '{latest}'"))
-  #browser()
-  uwy1 <- tibble::as_tibble(uwy)
-  if (!missing(mintime)) {
-    uwy0 <- dplyr::filter(uwy0, datetime >= mintime)
-    uwy1 <-  dplyr::filter(uwy1, datetime >= mintime)
-  }
-  dplyr::bind_rows(uwy0, uwy1)
-}
-
-
-cached_underway <- function() {
-  arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
-}
+library(nuyina.underway)
 ```
 # seaice.map
 
@@ -79,7 +60,7 @@ ptrack <- terra::project(as.matrix(track), to = pcrs0, from = "OGC:CRS84")
 ximage::ximage(r0, asp = 1, axes = FALSE)
 
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = pcrs0, from = "OGC:CRS84"), pch = ".", col = "#777777")
-title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
+title(readLines("data-raw/latestseaicefile.txt")[1], line = -2, col.main = "white")
 
 
 
@@ -107,7 +88,7 @@ r <- vapour::gdal_raster_data("data-raw/seaice.png", bands = 1:3)
 pcrs <- attr(r, "projection")
 ximage::ximage(r, asp = 1, axes = FALSE)
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = pcrs, from = "OGC:CRS84"), pch = ".", col = "#777777")
-title(readLines("data-raw/latestdate.txt"), line = -2, col.main = "white")
+title(readLines("data-raw/latestseaicefile.txt")[1], line = -2, col.main = "white")
 
 ptrack <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
 

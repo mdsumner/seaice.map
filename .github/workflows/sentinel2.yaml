@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - run: |
-          source("data-raw/sentinel.R")
+          source("R/geomedian-sentinel.R")
         shell: Rscript {0}
 
       - name: Commit
@@ -24,7 +24,7 @@ jobs:
           git config --global user.name 'Michael Sumner'
           git config --global user.email 'mdsumner@gmail.com'
           git config --global --add safe.directory '*'
-          git add data-raw/sentinel-image.tif
+          git add data-raw/sentinel-geomedian.tif
           git commit -m 'commit new sentinel image' || echo "No changes to commit"
           git push || echo "No changes to commit"
 

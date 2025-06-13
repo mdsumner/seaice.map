@@ -13,5 +13,12 @@ RoxygenNote: 7.2.3
 URL: https://github.com/mdsumner/seaice.map
 BugReports: https://github.com/mdsumner/seaice.map/issues
 Imports: 
+    dsn,
+    nuyina.underway,
+    purrr,
+    sds,
     stringr,
-    vapour
+    vapour,
+    vrtility,
+    ximage
+Remotes: tidyverse/purrr, mdsumner/nuyina.underway, hypertidy/dsn, hypertidy/ximage, hypertidy/sds, Permian-Global-Research/vrtility

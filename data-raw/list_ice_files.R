@@ -30,7 +30,7 @@ files <- dplyr::mutate(files, date = as.POSIXct(as.Date(stringr::str_extract(bas
 )
 
 arrow::write_parquet(files, sprintf("data-raw/files_%s_.parquet", x$id))
-writeLines(max(files$date), "data-raw/latestdate.txt")
+
 #files <- arrow::read_parquet(sprintf("data-raw/files_%s_.parquet", x$id))
 
 

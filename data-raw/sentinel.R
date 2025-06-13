@@ -2,15 +2,14 @@ library(terra)
 date <- format(Sys.Date()-12)
 ## note use of v1/ and particularly "sentinel-2-l2a"
 
-dat <- arrow::read_parquet("https://github.com/mdsumner/nuyina.underway/raw/main/data-raw/nuyina_underway.parquet")
+dat <- nuyina.underway::nuyina_underway()
 dat <- tail(dat, 10000)
-#dat <- dat[7031:9791, ]
-pt <- as.matrix(tail(dat, 1)[c("longitude", "latitude")])
-f <- 1/cos(pt[2] * pi/180)
-
-bbox <- rep(pt, 2) + c(-f, -1, f, 1) * 0.1
-
-
+# #dat <- dat[7031:9791, ]
+# pt <- as.matrix(tail(dat, 1)[c("longitude", "latitude")])
+# f <- 1/cos(pt[2] * pi/180)
+# bbox <- rep(pt, 2) + c(-f, -1, f, 1) * 0.1
+source("R/utils.R")
+bbox <- nicebbox(dat)
 ## bad gateway? limit to 100 ish
 ## https://forum.earthdata.nasa.gov/viewtopic.php?t=4801
 x <- readLines(paste0("https://earth-search.aws.element84.com/v1/search?limit=50&collections=sentinel-2-l2a&datetime=", date, "T00:00:00Z%2F..&bbox=", paste0(bbox, collapse = ",")))
@@ -35,7 +34,7 @@ sf::gdal_utils("warp", c(tf1, tf2), tf3 <- tempfile(fileext = ".tif"))
 #sf::gdal_utils("nearblack", tf2, tf3 <- tempfile(fileext = ".tif"))
 #imrgb <- rast("tf3.tif")
 imrgb <- rast(tf3)
-trackpts <- terra::project(cbind(dat$longitude, dat$latitude), to = crs(imrgb), from = "OGC:CRS84")
+#trackpts <- terra::project(cbind(dat$longitude, dat$latitude), to = crs(imrgb), from = "OGC:CRS84")
 #plotRGB(imrgb)
 writeRaster(imrgb, "data-raw/sentinel-image.tif", overwrite = TRUE)
 #lines(trackpts, col = "hotpink")
