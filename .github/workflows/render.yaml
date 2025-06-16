@@ -13,7 +13,7 @@ name: render-doc
 jobs:
   render-doc:
     runs-on: ${{ matrix.config.os }}
-    container: mdsumner/hypertidy:main
+    ##container: mdsumner/hypertidy:main
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 
     strategy:
@@ -39,7 +39,7 @@ jobs:
       #     http-user-agent: ${{ matrix.config.http-user-agent }}
       #     use-public-rspm: true
 
-     # - uses: r-lib/actions/setup-r-dependencies@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
 
       - name: Get data
         run: Rscript -e 'source("R/sea_ice_png.R"); sea_ice_png()'
