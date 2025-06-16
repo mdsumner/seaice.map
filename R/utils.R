@@ -1,4 +1,4 @@
-nicebbox <- function(dat, min = .05, max = 1) {
+nice_extent <- function(dat, min = .05, max = 1) {
   ex <- c(range(dat$longitude), range(dat$latitude))
   dif <- diff(ex)[c(1, 3)]
   if (any(dif < min)) {

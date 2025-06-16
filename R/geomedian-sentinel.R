@@ -1,4 +1,5 @@
-date <- format(Sys.Date()-12)
+geomedian_sentinel <- function() {
+  date <- format(Sys.Date()-12)
 
 dat <- nuyina.underway::nuyina_underway()
 dat <- tail(dat, 10000)
@@ -7,17 +8,17 @@ dat <- tail(dat, 10000)
 #f <- 1/cos(pt[2] * pi/180)
 #bbox <- rep(pt, 2) + c(-f, -1, f, 1) * 0.1
 source("R/utils.R")
-bbox <- nicebbox(dat)
+ex <- nice_extent(dat)
 library(vrtility)
 
 
 
 
-te <- bbox_to_projected(bbox)
+te <- bbox_to_projected(ex[c(1, 3, 2, 4)])
 trs <- attr(te, "wkt")
 
 s2_stac <- sentinel2_stac_query(
-  bbox = bbox,
+  bbox = ex[c(1, 3, 2, 4)],
   #start_date = format(as.Date(min(dat$datetime))),
   #end_date = format(as.Date(max(dat$datetime))),
   start_date = format(Sys.Date() - 365.25),
@@ -49,3 +50,5 @@ if (length(s2_stac$features) > 0) {
 
 
 }
+}
+
