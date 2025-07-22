@@ -20,7 +20,7 @@ First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
     #> [1] "2021-12-23 05:00:00 UTC" "2025-07-12 01:29:00 UTC"
-    #> terra 1.8.54
+    #> terra 1.8.60
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
