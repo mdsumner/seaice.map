@@ -13,3 +13,23 @@ nice_extent <- function(dat, min = .05, max = 1) {
   out
 
 }
+
+
+cbrt <- function(x) x^(1/3)
+honcfun <- function(x) cbrt(x  * 0.6)
+rescale_im <- function(x, to = c(-.15, 5), out = c(0, 1), honc = FALSE) {
+
+  from <- c(min(unlist(x), na.rm = TRUE),
+            max(unlist(x), na.rm = TRUE))
+  if (honc)  xout <- lapply(x, honcfun)
+  xout <- lapply(x, scales::rescale, to = to, from = from)
+  clamp <- function(x) {
+    x[x < out[1]] <- out[1]
+    x[x > out[2]] <- out[2]
+    x
+  }
+  xout <- lapply(xout, clamp)
+  attributes(xout) <- attributes(x)
+  xout
+}
+

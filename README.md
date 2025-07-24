@@ -4,7 +4,9 @@
 # seaice.map
 
 <!-- badges: start -->
+
 <!-- [![R-CMD-check](https://github.com/mdsumner/seaice.map/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mdsumner/seaice.map/actions/workflows/R-CMD-check.yaml)-->
+
 <!-- badges: end -->
 
 The goal of seaice.map is to
@@ -20,7 +22,7 @@ First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
     #> [1] "2021-12-23 05:00:00 UTC" "2025-07-12 01:29:00 UTC"
-    #> terra 1.8.60
+    #> terra 1.8.61
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
 
@@ -33,7 +35,7 @@ r <- vapour::gdal_raster_data("data-raw/seaice.png", bands = 1:3)
 pcrs <- attr(r, "projection")
 ximage::ximage(r, asp = 1, axes = FALSE)
 points(terra::project(do.call(cbind, maps::map(plot = F)[1:2]), to = pcrs, from = "OGC:CRS84"), pch = ".", col = "#777777")
-title(readLines("data-raw/latestseaicefile.txt")[1], line = -2, col.main = "white")
+title(readLines("data-raw/latestseaicefile.txt")[1], line = -2, col.main = "hotpink")
 
 ptrack <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
 
@@ -52,11 +54,11 @@ dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$datetime <- as.POSIXct(dat$datetime, "%Y/%m/%d %H:%M:%S", tz = "UTC")
 
-track <- cbind(dat$longitude, dat$latitude)
+#track0 <- cbind(dat$longitude, dat$latitude)
 
-track <- terra::project(as.matrix(track), to = pcrs, from = "OGC:CRS84")
-lines(track, col = "hotpink")
-pt <- tail(track[!is.na(track[,1]) & !is.na(track[,2]), ], 1L)
+#track <- terra::project(as.matrix(track0), to = pcrs, from = "OGC:CRS84")
+lines(ptrack, col = "hotpink")
+pt <- tail(ptrack[!is.na(ptrack[,1]) & !is.na(ptrack[,2]), ], 1L)
 points(pt, pch = "+", col = "hotpink")
 ## key locations just defined in the source of this document
 pl[c("X", "Y")] <- terra::project(cbind(pl$x, pl$y), to = pcrs, from = "OGC:CRS84")
@@ -107,22 +109,6 @@ cont <- terra::project(terra::rast("/vsicurl/https://gebco2023.s3.valeria.scienc
 cont[cont > -10] <- NA
 try(contour(cont, add = TRUE, col = "lightgrey", breaks = quantile(na.omit(values(cont)[,1]), seq(0.1, 1, by = 10))), silent = TRUE)
 ```
-
-``` r
-
-vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
-which(vars %in% names(dat))
-#> [1] 3 6 7
- for (i in seq_along(vars)) {
-   bad <- is.na(dat[[vars[i]]])
-   if (any(!bad)) {
-     dat2 <- dat[!bad, ]
-      plot(dat2$datetime, dat2[[vars[i]]], pch = 19, cex = .2, xlab = "", main = vars[i])
-   }
- }
-```
-
-![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->![](man/figures/README-traceplots-3.png)<!-- -->
 
 This is 25km sea ice concentration from NSIDC, reprojected from images
 published by NOAA at <https://noaadata.apps.nsidc.org/NOAA/G02135/> (the
@@ -188,13 +174,33 @@ for (i in seq_along(r)) {
 if (!inherits(r, "try-error")) {
   ptrack <- terra::project(as.matrix(track), to = attr(r, "projection"), from = "OGC:CRS84")
 for (i in 1:3) r[[i]][is.na(r[[i]])] <- 0
-ximage::ximage(r, asp = 1)
+source("R/utils.R")
+ximage::ximage(rescale_im(r), asp = 1)
+
 lines(tail(ptrack, 5000), col = "hotpink")
-#points(pl$X, pl$Y, pch = 19, col = "hotpink", cex = 0.5)
+points(tail(ptrack, 50), pch = 19, col = "hotpink", cex = 0.5)
 }
 ```
 
 ![](man/figures/README-sentinel-zoom-1.png)<!-- -->
+
+Now plot some of the underway data.
+
+``` r
+
+vars <- c("port_solar_irradiance", "shipnav_ground_course", "air_pressure_trend3h", "fore_2_wind_from_direction_true", "port_air_temperature", "longitude", "latitude")
+which(vars %in% names(dat))
+#> [1] 3 6 7
+ for (i in seq_along(vars)) {
+   bad <- is.na(dat[[vars[i]]])
+   if (any(!bad)) {
+     dat2 <- dat[!bad, ]
+      plot(dat2$datetime, dat2[[vars[i]]], pch = 19, cex = .2, xlab = "", main = vars[i])
+   }
+ }
+```
+
+![](man/figures/README-traceplots-1.png)<!-- -->![](man/figures/README-traceplots-2.png)<!-- -->![](man/figures/README-traceplots-3.png)<!-- -->
 
 ## Code of Conduct
 

@@ -17,9 +17,18 @@ Imports:
     maps,
     nuyina.underway,
     purrr,
+    scene,
     sds,
     stringr,
     vapour,
     vrtility,
     ximage
-Remotes: AustralianAntarcticDivision/blueant, ropensci/bowerbird, tidyverse/purrr, mdsumner/nuyina.underway, hypertidy/dsn, hypertidy/ximage, hypertidy/sds, Permian-Global-Research/vrtility
+Remotes: AustralianAntarcticDivision/blueant, 
+         ropensci/bowerbird, 
+        tidyverse/purrr, 
+        mdsumner/nuyina.underway, 
+        hypertidy/dsn, 
+        hypertidy/ximage, 
+        hypertidy/sds, 
+        hypertidy/scene,
+        Permian-Global-Research/vrtility
