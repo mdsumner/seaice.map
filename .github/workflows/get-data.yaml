@@ -13,7 +13,7 @@ name: refresh-data
 jobs:
   refresh-data:
     runs-on: ubuntu-latest
-    container: mdsumner/hypertidy:main
+    container: ghcr.io/mdsumner/gdal-builds:rocker-gdal-dev-python
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
