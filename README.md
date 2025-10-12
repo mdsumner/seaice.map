@@ -19,7 +19,7 @@ The goal of seaice.map is to
 First, a modified map of the subsequent one to put the ship in the
 centre. (we’ll fix this up)
 
-    #> [1] "2021-12-23 05:00:00 UTC" "2025-10-12 04:09:00 UTC"
+    #> [1] "2021-12-23 05:00:00 UTC" "2025-10-12 12:11:00 UTC"
     #> terra 1.8.70
 
 ![](man/figures/README-pivot-map-1.png)<!-- -->
@@ -47,7 +47,7 @@ dat <- nuyina_underway()
 
 dat$longitude[dat$longitude < 0] <- -dat$longitude[dat$longitude < 0] 
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2025-10-12 04:09:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2025-10-12 12:12:00 UTC"
 dat <- tibble::as_tibble(dat)
 dat <- tail(dat, n)
 dat$datetime <- as.POSIXct(dat$datetime, "%Y/%m/%d %H:%M:%S", tz = "UTC")
@@ -158,7 +158,7 @@ worked where the ship was at the time.
 ``` r
 dat <- nuyina_underway()
 print(range( dat$datetime))
-#> [1] "2021-12-23 05:00:00 UTC" "2025-10-12 04:10:00 UTC"
+#> [1] "2021-12-23 05:00:00 UTC" "2025-10-12 12:12:00 UTC"
 
 track <- cbind(dat$longitude, dat$latitude)
 ## there's an artefact uploaded for each run, but we should probably put these elswhere ...WIP
