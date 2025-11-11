@@ -19,7 +19,6 @@ Sys.setenv(AWS_ACCESS_KEY_ID = Sys.getenv("PAWSEY_AWS_ACCESS_KEY_ID"),
            AWS_VIRTUAL_HOSTING = "NO")
 
 
-
 ## in 20 days we force a rerun of the backlog by bowerbird
 ## but every run we invalidate 'files' so we always know this year is complete
 invalidate <- tar_older(Sys.time() - as.difftime(20, units = "days"), names = "bl_files")
