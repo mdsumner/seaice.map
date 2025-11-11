@@ -1,27 +1,3 @@
-sea_ice_files <- function() {
-    time <- Sys.time()
-    YEAR <- format(time, "%Y")
-    MONTH <- format(time, "%m")
-    MNAME <- format(time, "%b")  ## assume locale is ok
-    hemi <- c("north", "south")
-    dir <- sprintf("https://noaadata.apps.nsidc.org/NOAA/G02135/%s/daily/geotiff/%s/%s_%s", hemi, YEAR, MONTH, MNAME)
-
-    tx1 <- try(readLines(dir[1]), silent = T)
-    if (inherits(tx1, "try-error")) {
-      ## back a month
-      time <- seq(time, by = "-1 month", length.out = 2L)[2L]
-      YEAR <- format(time, "%Y")
-      MONTH <- format(time, "%m")
-      MNAME <- format(time, "%b")  ## assume locale is ok
-      hemi <- c("north", "south")
-      dir <- sprintf("https://noaadata.apps.nsidc.org/NOAA/G02135/%s/daily/geotiff/%s/%s_%s", hemi, YEAR, MONTH, MNAME)
-    }
-    tx <- lapply(dir, readLines)
-    south <- file.path(dir[2], gsub("^>", "", tail(na.omit(stringr::str_extract(tx[[2]], ">S_.*concentration.*tif")), 1)))
-    north <- file.path(dir[1], gsub("^>", "", tail(na.omit(stringr::str_extract(tx[[1]], ">N_.*concentration.*tif")), 1)))
-
-    c(north, south)
-}
 
 sea_ice_image <- function(x) {
    target_file <- x$outfile[1L]
