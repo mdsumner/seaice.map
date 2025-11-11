@@ -51,4 +51,8 @@ tar_assign({
   sources <- transmute(images, date,
                         source = gsub("s3://", sprintf("/vsicurl/%s/", endpoint), outfile),
                         north, south) |> tar_target()
+
+  ## can't get this to work to overwrite
+  # index <- write_index(sources, sprintf("/vsis3/%s/seaice_image_index.parquet", bucket)) |>
+  #   tar_target(cue = tar_cue(mode = "always"))
 })

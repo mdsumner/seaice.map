@@ -44,6 +44,31 @@ https://projects.pawsey.org.au/nuyina.map/NOAA/G02135/2025/concentration_v4.0_20
 
 Index to come. 
 
+## Unfinished index
+
+An index is available here, but is not updating yet
+
+```
+https://projects.pawsey.org.au/nuyina.map/seaice_image_index.parquet
+```
+
+So we can do
+
+```{r terra}
+library(terra)
+dsn <- "/vsicurl/https://projects.pawsey.org.au/nuyina.map/seaice_image_index.parquet"
+table <- tail(vect(dsn, what = "attributes"), 100)
+
+one <- table[sample(nrow(table), 1), ]
+plot(rast(one$source)); text(0, 0, lab = format(one$date), col = "hotpink")
+```
+
+The table of sources has the original files as well: 
+
+```{r sources}
+as.data.frame(one[c("north", "south")])
+```
+
 
 ## Code of Conduct
   
