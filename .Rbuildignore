@@ -1,0 +1,9 @@
+^seaice\.map\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^README\.Rmd$
+^\.*\.Rproj$
+^data-raw$
+^CODE_OF_CONDUCT\.md$
+^LICENSE\.md$
+^_targets$
