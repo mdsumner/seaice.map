@@ -129,20 +129,14 @@
         #datetime-readout {
             font-family: monospace;
             font-size: 11px;
-            color: #999;
-            background: #1a1a1a;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin-top: 5px;
-            line-height: 1.6;
+            color: #888;
+            text-align: right;
+            line-height: 1.4;
         }
         
-        #datetime-readout .start-time {
-            color: #4a9eff;
-        }
-        
+        #datetime-readout .start-time,
         #datetime-readout .end-time {
-            color: #ff6b6b;
+            color: #888;
         }
         
         #info {
@@ -377,6 +371,10 @@
                     <span id="page-info" style="font-size: 14px; color: #999;"></span>
                     <button id="next-page" onclick="nextPage()">Next Period ►</button>
                 </div>
+                <div id="datetime-readout">
+                    <div class="start-time"><span id="start-datetime"></span></div>
+                    <div class="end-time"><span id="end-datetime"></span></div>
+                </div>
             </div>
             <div id="timeline">
                 <div id="slider-container">
@@ -388,10 +386,6 @@
                 <div id="date-range">
                     <span id="start-date"></span>
                     <span id="end-date"></span>
-                </div>
-                <div id="datetime-readout">
-                    <div class="start-time">Start: <span id="start-datetime"></span></div>
-                    <div class="end-time">End: <span id="end-datetime"></span></div>
                 </div>
             </div>
             <div id="info">
@@ -631,23 +625,33 @@
                 
                 console.log('Coastline data loaded:', data.features.length, 'features');
                 
-                // Convert GeoJSON to pixel coordinates
+                // Calculate maximum reasonable segment length (e.g., 20% of image height)
+                const maxSegmentLength = CONFIG.imageHeight * 0.2;
+                
+                // Convert GeoJSON to pixel coordinates and filter out wrap-around segments
                 const coastlinePixels = [];
                 
                 data.features.forEach(feature => {
                     if (feature.geometry.type === 'LineString') {
-                        const pixelRing = feature.geometry.coordinates.map(coord => {
+                        const coords = feature.geometry.coordinates.map(coord => {
                             const [lon, lat] = coord;
                             return lonLatToPixel(lon, lat);
                         });
-                        coastlinePixels.push(pixelRing);
+                        
+                        // Split into segments, filtering out long ones
+                        const segments = splitAndFilterSegments(coords, maxSegmentLength);
+                        coastlinePixels.push(...segments);
+                        
                     } else if (feature.geometry.type === 'MultiLineString') {
                         feature.geometry.coordinates.forEach(lineString => {
-                            const pixelRing = lineString.map(coord => {
+                            const coords = lineString.map(coord => {
                                 const [lon, lat] = coord;
                                 return lonLatToPixel(lon, lat);
                             });
-                            coastlinePixels.push(pixelRing);
+                            
+                            // Split into segments, filtering out long ones
+                            const segments = splitAndFilterSegments(coords, maxSegmentLength);
+                            coastlinePixels.push(...segments);
                         });
                     }
                 });
@@ -661,6 +665,44 @@
                 updateStatus('Coastline unavailable');
                 state.coastline = null;
             }
+        }
+        
+        // Split a line into segments, removing those that are too long (wrap-around artifacts)
+        function splitAndFilterSegments(coords, maxLength) {
+            const segments = [];
+            let currentSegment = [];
+            
+            for (let i = 0; i < coords.length; i++) {
+                const point = coords[i];
+                
+                if (currentSegment.length > 0) {
+                    const prevPoint = currentSegment[currentSegment.length - 1];
+                    const dx = point.x - prevPoint.x;
+                    const dy = point.y - prevPoint.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance > maxLength) {
+                        // This segment is too long (likely a wrap-around)
+                        // Save current segment if it has multiple points
+                        if (currentSegment.length > 1) {
+                            segments.push(currentSegment);
+                        }
+                        // Start a new segment
+                        currentSegment = [point];
+                    } else {
+                        currentSegment.push(point);
+                    }
+                } else {
+                    currentSegment.push(point);
+                }
+            }
+            
+            // Add the last segment
+            if (currentSegment.length > 1) {
+                segments.push(currentSegment);
+            }
+            
+            return segments;
         }
         
         // Toggle coastline visibility
