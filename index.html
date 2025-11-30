@@ -184,12 +184,16 @@
         const CONFIG = {
             imageBaseUrl: 'https://projects.pawsey.org.au/nuyina.map/NOAA/G02135',
             trackUrl: 'https://raw.githubusercontent.com/mdsumner/seaice.map/refs/heads/main/vessel_track_hourly.json',
-            daysToShow: 14,
-            // These will be loaded from .aux.xml
-            projection: null,
-            extent: null,
-            imageWidth: null,
-            imageHeight: null
+            projection: '+proj=tmerc +lat_0=0 +lon_0=115 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+            extent: {
+                xmin: -6007500,
+                xmax: 6012500,
+                ymin: -14422000,
+                ymax: 14418000
+            },
+            imageWidth: 601,
+            imageHeight: 1442,
+            daysToShow: 14
         };
 
         // State
@@ -208,9 +212,12 @@
             isDragging: false,
             dragStart: { x: 0, y: 0 },
             animationId: null,
-            imageCache: {},
-            transformer: null // Will be initialized after loading metadata
+            imageCache: {}
         };
+
+        // Initialize proj4
+        proj4.defs('CUSTOM', CONFIG.projection);
+        const transformer = proj4('EPSG:4326', 'CUSTOM');
 
         // Generate date range (last 14 days)
         function generateDates() {
@@ -225,66 +232,6 @@
             }
 
             return dates;
-        }
-
-        // Load and parse GDAL PAM metadata
-        async function loadMetadata(auxUrl) {
-            try {
-                updateStatus('Loading metadata...');
-                const response = await fetch(auxUrl);
-                const xmlText = await response.text();
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-                // Extract SRS (projection)
-                const srsElement = xmlDoc.querySelector('SRS');
-                if (srsElement) {
-                    CONFIG.projection = srsElement.textContent.trim();
-                }
-
-                // Extract GeoTransform
-                const geoTransformElement = xmlDoc.querySelector('GeoTransform');
-                if (geoTransformElement) {
-                    const values = geoTransformElement.textContent.trim().split(',').map(v => parseFloat(v.trim()));
-                    // GeoTransform format: [x_origin, pixel_width, 0, y_origin, 0, -pixel_height]
-                    const xOrigin = values[0];
-                    const pixelWidth = values[1];
-                    const yOrigin = values[3];
-                    const pixelHeight = -values[5]; // Negative in geotransform
-
-                    // Get raster dimensions
-                    const rasterXSize = parseInt(xmlDoc.querySelector('PAMDataset').getAttribute('RasterXSize'));
-                    const rasterYSize = parseInt(xmlDoc.querySelector('PAMDataset').getAttribute('RasterYSize'));
-
-                    CONFIG.imageWidth = rasterXSize;
-                    CONFIG.imageHeight = rasterYSize;
-
-                    // Calculate extent
-                    CONFIG.extent = {
-                        xmin: xOrigin,
-                        xmax: xOrigin + (rasterXSize * pixelWidth),
-                        ymin: yOrigin - (rasterYSize * pixelHeight),
-                        ymax: yOrigin
-                    };
-                }
-
-                // Initialize proj4 transformer
-                proj4.defs('CUSTOM', CONFIG.projection);
-                state.transformer = proj4('EPSG:4326', 'CUSTOM');
-
-                updateStatus('Metadata loaded');
-                console.log('Loaded metadata:', {
-                    projection: CONFIG.projection,
-                    extent: CONFIG.extent,
-                    imageSize: [CONFIG.imageWidth, CONFIG.imageHeight]
-                });
-
-                return true;
-            } catch (e) {
-                console.error('Failed to load metadata:', e);
-                updateStatus('Failed to load metadata');
-                return false;
-            }
         }
 
         // Format date as YYYY-MM-DD
@@ -347,7 +294,7 @@
         // Convert lon/lat to pixel coordinates
         function lonLatToPixel(lon, lat) {
             // Transform to projected coordinates
-            const [x, y] = state.transformer.forward([lon, lat]);
+            const [x, y] = transformer.forward([lon, lat]);
 
             // Convert projected coordinates to pixel coordinates
             const pixelX = ((x - CONFIG.extent.xmin) / (CONFIG.extent.xmax - CONFIG.extent.xmin)) * CONFIG.imageWidth;
@@ -604,20 +551,6 @@
             const slider = document.getElementById('time-slider');
             slider.max = state.dates.length - 1;
             slider.value = state.currentDateIndex;
-
-            // Load metadata from first available image's .aux.xml
-            let metadataLoaded = false;
-            for (let i = state.dates.length - 1; i >= 0 && !metadataLoaded; i--) {
-                const date = state.dates[i];
-                const imageUrl = getImageUrl(date);
-                const auxUrl = imageUrl + '.aux.xml';
-                metadataLoaded = await loadMetadata(auxUrl);
-            }
-
-            if (!metadataLoaded) {
-                updateStatus('Error: Could not load metadata');
-                return;
-            }
 
             // Load vessel track
             await loadVesselTrack();
