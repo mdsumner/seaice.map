@@ -51,6 +51,15 @@
             margin-bottom: 15px;
         }
 
+        #date-range {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
         #time-slider {
             width: 100%;
             height: 8px;
@@ -167,6 +176,10 @@
         <div id="controls">
             <div id="timeline">
                 <input type="range" id="time-slider" min="0" max="13" value="13" step="1">
+                <div id="date-range">
+                    <span id="start-date"></span>
+                    <span id="end-date"></span>
+                </div>
             </div>
             <div id="info">
                 <div id="date-display">Loading...</div>
@@ -193,7 +206,7 @@
             },
             imageWidth: 601,
             imageHeight: 1442,
-            daysToShow: 14
+            daysToShow: 365  // Show 1 year of data
         };
 
         // State
@@ -551,6 +564,10 @@
             const slider = document.getElementById('time-slider');
             slider.max = state.dates.length - 1;
             slider.value = state.currentDateIndex;
+
+            // Display date range
+            document.getElementById('start-date').textContent = formatDate(state.dates[0]);
+            document.getElementById('end-date').textContent = formatDate(state.dates[state.dates.length - 1]);
 
             // Load vessel track
             await loadVesselTrack();
