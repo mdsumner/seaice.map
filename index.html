@@ -181,6 +181,84 @@
             color: #999;
         }
 
+        #help-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2a2a2a;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+        }
+
+        #help-panel.visible {
+            display: block;
+        }
+
+        #help-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 999;
+        }
+
+        #help-overlay.visible {
+            display: block;
+        }
+
+        #help-panel h2 {
+            margin-top: 0;
+            color: #4a9eff;
+        }
+
+        #help-panel h3 {
+            color: #ff6b6b;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        #help-panel ul {
+            line-height: 1.6;
+            padding-left: 20px;
+        }
+
+        #help-panel li {
+            margin-bottom: 8px;
+        }
+
+        #help-panel code {
+            background: #1a1a1a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .close-help {
+            float: right;
+            background: #404040;
+            border: none;
+            color: #e0e0e0;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .close-help:hover {
+            background: #505050;
+        }
+
         #zoom-controls {
             position: absolute;
             top: 20px;
@@ -201,6 +279,52 @@
 </head>
 <body>
     <div id="container">
+        <div id="help-overlay" onclick="toggleHelp()"></div>
+        <div id="help-panel">
+            <button class="close-help" onclick="toggleHelp()">✕ Close</button>
+            <h2>Vessel Track Map Viewer</h2>
+
+            <h3>📅 Timeline Controls</h3>
+            <ul>
+                <li><strong>Previous/Next Period:</strong> Navigate between year-long periods (2020-2025)</li>
+                <li><strong>Blue slider (left):</strong> Start date of the range</li>
+                <li><strong>Red slider (right):</strong> End date of the range</li>
+                <li><strong>Blue highlighted bar:</strong> Click and drag to slide the entire time window</li>
+                <li><strong>Vessel track:</strong> Displays only within the selected date range</li>
+            </ul>
+
+            <h3>▶️ Animation</h3>
+            <ul>
+                <li><strong>Play (▶):</strong> Animate the time window forward</li>
+                <li><strong>Reverse (◀):</strong> Animate the time window backward</li>
+                <li><strong>Pause (⏸):</strong> Stop animation</li>
+                <li><strong>Speed slider:</strong> Adjust animation speed (0.1s to 2.0s per frame)</li>
+            </ul>
+
+            <h3>🗺️ Map Navigation</h3>
+            <ul>
+                <li><strong>Click and drag:</strong> Pan the map</li>
+                <li><strong>Mouse wheel:</strong> Zoom in/out at cursor position</li>
+                <li><strong>+ button:</strong> Zoom in at center</li>
+                <li><strong>− button:</strong> Zoom out at center</li>
+                <li><strong>⌂ button:</strong> Reset to original view</li>
+            </ul>
+
+            <h3>🚢 Vessel Track</h3>
+            <ul>
+                <li><strong>Red line:</strong> Vessel path during selected time range</li>
+                <li><strong>Red dot:</strong> Vessel position at end of range</li>
+                <li><strong>Tip:</strong> Set start = end for a single-day snapshot</li>
+            </ul>
+
+            <h3>🖼️ Background Images</h3>
+            <ul>
+                <li>Background image aligns to the <strong>end date</strong> of the range</li>
+                <li>If an image is missing, the viewer automatically uses the nearest earlier date</li>
+                <li>Status message shows if a fallback image is being used</li>
+            </ul>
+        </div>
+
         <div id="map-container">
             <canvas id="canvas"></canvas>
             <div id="loading">Loading...</div>
@@ -212,6 +336,13 @@
         </div>
 
         <div id="controls">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="prev-page" onclick="prevPage()">◄ Previous Period</button>
+                    <span id="page-info" style="font-size: 14px; color: #999;"></span>
+                    <button id="next-page" onclick="nextPage()">Next Period ►</button>
+                </div>
+            </div>
             <div id="timeline">
                 <div id="slider-container">
                     <div id="slider-track"></div>
@@ -228,6 +359,7 @@
                 <div id="date-display">Loading...</div>
                 <div class="status" id="status">Initializing...</div>
                 <div class="controls-group">
+                    <button onclick="playReverse()">◀ Reverse</button>
                     <button onclick="playAnimation()">▶ Play</button>
                     <button onclick="stopAnimation()">⏸ Pause</button>
                     <label style="margin-left: 15px; display: flex; align-items: center; gap: 8px;">
@@ -237,6 +369,7 @@
                         <span id="speed-display">0.5s</span>
                     </label>
                 </div>
+                <button onclick="toggleHelp()" style="margin-left: auto;">❓ Help</button>
             </div>
         </div>
     </div>
@@ -255,7 +388,9 @@
             },
             imageWidth: 601,
             imageHeight: 1442,
-            daysToShow: 365  // Show 1 year of data
+            daysPerPage: 365,  // Show 1 year per page
+            endDate: new Date('2025-11-10T00:00:00Z'),  // Latest available date
+            startDate: new Date('2020-01-01T00:00:00Z')  // Earliest date to show
         };
 
         // State
@@ -263,6 +398,9 @@
             canvas: null,
             ctx: null,
             dates: [],
+            allDates: [],  // All available dates across all pages
+            currentPage: 0,
+            totalPages: 0,
             startDateIndex: 0,
             endDateIndex: 0,
             vesselTrack: [],
@@ -285,19 +423,71 @@
         proj4.defs('CUSTOM', CONFIG.projection);
         const transformer = proj4('EPSG:4326', 'CUSTOM');
 
-        // Generate date range (last 14 days)
-        function generateDates() {
+        // Generate all available dates
+        function generateAllDates() {
             const dates = [];
-            // Use fixed end date instead of current date
-            const end = new Date('2025-11-10T00:00:00Z');
+            const start = new Date(CONFIG.startDate);
+            const end = new Date(CONFIG.endDate);
 
-            for (let i = CONFIG.daysToShow - 1; i >= 0; i--) {
-                const date = new Date(end);
-                date.setDate(date.getDate() - i);
-                dates.push(date);
+            let current = new Date(start);
+            while (current <= end) {
+                dates.push(new Date(current));
+                current.setDate(current.getDate() + 1);
             }
 
             return dates;
+        }
+
+        // Get dates for current page
+        function getPageDates() {
+            const startIdx = state.currentPage * CONFIG.daysPerPage;
+            const endIdx = Math.min(startIdx + CONFIG.daysPerPage, state.allDates.length);
+            return state.allDates.slice(startIdx, endIdx);
+        }
+
+        // Update page
+        function setPage(pageNum) {
+            state.currentPage = Math.max(0, Math.min(pageNum, state.totalPages - 1));
+            state.dates = getPageDates();
+
+            // Reset range to last 14 days of current page
+            state.endDateIndex = state.dates.length - 1;
+            state.startDateIndex = Math.max(0, state.endDateIndex - 13);
+
+            // Update sliders
+            const sliderStart = document.getElementById('slider-start');
+            const sliderEnd = document.getElementById('slider-end');
+            sliderStart.max = state.dates.length - 1;
+            sliderEnd.max = state.dates.length - 1;
+            sliderStart.value = state.startDateIndex;
+            sliderEnd.value = state.endDateIndex;
+
+            updateSliderRange();
+            updatePageDisplay();
+            updateDisplay();
+        }
+
+        function nextPage() {
+            if (state.currentPage < state.totalPages - 1) {
+                setPage(state.currentPage + 1);
+            }
+        }
+
+        function prevPage() {
+            if (state.currentPage > 0) {
+                setPage(state.currentPage - 1);
+            }
+        }
+
+        function updatePageDisplay() {
+            const pageInfo = document.getElementById('page-info');
+            const startDate = formatDate(state.dates[0]);
+            const endDate = formatDate(state.dates[state.dates.length - 1]);
+            pageInfo.textContent = `Period: ${startDate} to ${endDate} (Page ${state.currentPage + 1}/${state.totalPages})`;
+
+            // Enable/disable buttons
+            document.getElementById('prev-page').disabled = state.currentPage === 0;
+            document.getElementById('next-page').disabled = state.currentPage === state.totalPages - 1;
         }
 
         // Format date as YYYY-MM-DD
@@ -310,7 +500,7 @@
             const dateStr = formatDate(date);
             const year = date.getFullYear();
             const url = `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
-            // FIXME
+
             // Uncomment to use CORS proxy (for testing only):
             return `https://corsproxy.io/?${encodeURIComponent(url)}`;
 
@@ -569,6 +759,36 @@
             }
         }
 
+        function playReverse() {
+            if (state.animationId) {
+                stopAnimation();
+            }
+
+            state.animationId = setInterval(() => {
+                const rangeDuration = state.endDateIndex - state.startDateIndex;
+
+                if (state.startDateIndex > 0) {
+                    // Move both start and end backward by 1, maintaining range duration
+                    state.startDateIndex--;
+                    state.endDateIndex--;
+
+                    document.getElementById('slider-start').value = state.startDateIndex;
+                    document.getElementById('slider-end').value = state.endDateIndex;
+                    updateSliderRange();
+                    updateDisplay();
+                } else {
+                    stopAnimation();
+                }
+            }, state.animationSpeed);
+        }
+
+        function toggleHelp() {
+            const helpPanel = document.getElementById('help-panel');
+            const helpOverlay = document.getElementById('help-overlay');
+            helpPanel.classList.toggle('visible');
+            helpOverlay.classList.toggle('visible');
+        }
+
         // Update status
         function updateStatus(message) {
             document.getElementById('status').textContent = message;
@@ -731,8 +951,13 @@
 
             resizeCanvas();
 
-            // Generate dates
-            state.dates = generateDates();
+            // Generate all dates and calculate pagination
+            state.allDates = generateAllDates();
+            state.totalPages = Math.ceil(state.allDates.length / CONFIG.daysPerPage);
+            state.currentPage = state.totalPages - 1;  // Start on most recent page
+
+            // Get dates for current page
+            state.dates = getPageDates();
 
             // Default to last 14 days of the range
             state.endDateIndex = state.dates.length - 1;
@@ -746,8 +971,9 @@
             sliderStart.value = state.startDateIndex;
             sliderEnd.value = state.endDateIndex;
 
-            // Initialize range visual
+            // Initialize range visual and page display
             updateSliderRange();
+            updatePageDisplay();
 
             // Load vessel track
             await loadVesselTrack();
