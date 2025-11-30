@@ -51,25 +51,24 @@
             margin-bottom: 15px;
         }
 
-        #date-range {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
+        #slider-container {
+            position: relative;
+            height: 40px;
             margin-bottom: 10px;
         }
 
-        #time-slider {
+        .time-slider {
+            position: absolute;
             width: 100%;
             height: 8px;
             border-radius: 4px;
-            background: #404040;
+            background: transparent;
             outline: none;
             -webkit-appearance: none;
+            pointer-events: none;
         }
 
-        #time-slider::-webkit-slider-thumb {
+        .time-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 20px;
@@ -77,15 +76,53 @@
             border-radius: 50%;
             background: #4a9eff;
             cursor: pointer;
+            pointer-events: auto;
+            position: relative;
+            z-index: 3;
         }
 
-        #time-slider::-moz-range-thumb {
+        .time-slider::-moz-range-thumb {
             width: 20px;
             height: 20px;
             border-radius: 50%;
             background: #4a9eff;
             cursor: pointer;
             border: none;
+            pointer-events: auto;
+        }
+
+        #slider-end::-webkit-slider-thumb {
+            background: #ff6b6b;
+        }
+
+        #slider-end::-moz-range-thumb {
+            background: #ff6b6b;
+        }
+
+        #slider-track {
+            position: absolute;
+            height: 8px;
+            background: #404040;
+            border-radius: 4px;
+            width: 100%;
+            top: 16px;
+        }
+
+        #slider-range {
+            position: absolute;
+            height: 8px;
+            background: #4a9eff;
+            border-radius: 4px;
+            top: 16px;
+        }
+
+        #date-range {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+            margin-bottom: 10px;
         }
 
         #info {
@@ -175,7 +212,12 @@
 
         <div id="controls">
             <div id="timeline">
-                <input type="range" id="time-slider" min="0" max="13" value="13" step="1">
+                <div id="slider-container">
+                    <div id="slider-track"></div>
+                    <div id="slider-range"></div>
+                    <input type="range" id="slider-start" class="time-slider" min="0" max="364" value="350" step="1">
+                    <input type="range" id="slider-end" class="time-slider" min="0" max="364" value="364" step="1">
+                </div>
                 <div id="date-range">
                     <span id="start-date"></span>
                     <span id="end-date"></span>
@@ -214,8 +256,8 @@
             canvas: null,
             ctx: null,
             dates: [],
-            currentDateIndex: 0,
-            currentImage: null,
+            startDateIndex: 0,
+            endDateIndex: 0,
             vesselTrack: [],
             transform: {
                 scale: 1,
@@ -225,7 +267,8 @@
             isDragging: false,
             dragStart: { x: 0, y: 0 },
             animationId: null,
-            imageCache: {}
+            imageCache: {},
+            currentImage: null
         };
 
         // Initialize proj4
@@ -258,8 +301,9 @@
             const year = date.getFullYear();
             const url = `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
 
+//fixme: put in bucket and turn this off
             // Uncomment to use CORS proxy (for testing only):
-             return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            return `https://corsproxy.io/?${encodeURIComponent(url)}`;
 
             return url;
         }
@@ -369,10 +413,13 @@
             ctx.drawImage(state.currentImage, 0, 0, CONFIG.imageWidth, CONFIG.imageHeight);
             ctx.restore();
 
-            // Draw vessel track
+            // Draw vessel track for the selected date range
             if (state.vesselTrack.length > 0) {
-                const currentDate = state.dates[state.currentDateIndex];
-                const relevantPoints = state.vesselTrack.filter(p => p.datetime <= currentDate);
+                const startDate = state.dates[state.startDateIndex];
+                const endDate = state.dates[state.endDateIndex];
+                const relevantPoints = state.vesselTrack.filter(p =>
+                    p.datetime >= startDate && p.datetime <= endDate
+                );
 
                 if (relevantPoints.length > 0) {
                     // Draw track line
@@ -393,7 +440,7 @@
 
                     ctx.stroke();
 
-                    // Draw current position
+                    // Draw end position (last point in range)
                     const lastPoint = relevantPoints[relevantPoints.length - 1];
                     const x = lastPoint.x * scale + offsetX;
                     const y = lastPoint.y * scale + offsetY;
@@ -412,12 +459,30 @@
 
         // Update display
         async function updateDisplay() {
-            const result = await loadImageWithFallback(state.currentDateIndex);
+            const result = await loadImageWithFallback(state.endDateIndex);
             if (result) {
                 state.currentImage = result.image;
-                document.getElementById('date-display').textContent = formatDate(result.date);
+                document.getElementById('date-display').textContent =
+                    `${formatDate(state.dates[state.startDateIndex])} → ${formatDate(result.date)}`;
                 render();
             }
+        }
+
+        // Update slider range visual
+        function updateSliderRange() {
+            const sliderRange = document.getElementById('slider-range');
+            const sliderStart = document.getElementById('slider-start');
+            const sliderEnd = document.getElementById('slider-end');
+
+            const percent1 = (state.startDateIndex / (state.dates.length - 1)) * 100;
+            const percent2 = (state.endDateIndex / (state.dates.length - 1)) * 100;
+
+            sliderRange.style.left = percent1 + '%';
+            sliderRange.style.width = (percent2 - percent1) + '%';
+
+            // Update date range display
+            document.getElementById('start-date').textContent = formatDate(state.dates[state.startDateIndex]);
+            document.getElementById('end-date').textContent = formatDate(state.dates[state.endDateIndex]);
         }
 
         // Fit image to canvas
@@ -469,9 +534,10 @@
             if (state.animationId) return;
 
             state.animationId = setInterval(() => {
-                if (state.currentDateIndex < state.dates.length - 1) {
-                    state.currentDateIndex++;
-                    document.getElementById('time-slider').value = state.currentDateIndex;
+                if (state.endDateIndex < state.dates.length - 1) {
+                    state.endDateIndex++;
+                    document.getElementById('slider-end').value = state.endDateIndex;
+                    updateSliderRange();
                     updateDisplay();
                 } else {
                     stopAnimation();
@@ -494,12 +560,30 @@
         // Event handlers
         function setupEventHandlers() {
             const canvas = state.canvas;
-            const slider = document.getElementById('time-slider');
+            const sliderStart = document.getElementById('slider-start');
+            const sliderEnd = document.getElementById('slider-end');
 
-            // Time slider
-            slider.addEventListener('input', (e) => {
-                state.currentDateIndex = parseInt(e.target.value);
-                updateDisplay();
+            // Range sliders
+            sliderStart.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                if (value <= state.endDateIndex) {
+                    state.startDateIndex = value;
+                    updateSliderRange();
+                    updateDisplay();
+                } else {
+                    e.target.value = state.startDateIndex;
+                }
+            });
+
+            sliderEnd.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                if (value >= state.startDateIndex) {
+                    state.endDateIndex = value;
+                    updateSliderRange();
+                    updateDisplay();
+                } else {
+                    e.target.value = state.endDateIndex;
+                }
             });
 
             // Mouse wheel zoom
@@ -563,16 +647,21 @@
 
             // Generate dates
             state.dates = generateDates();
-            state.currentDateIndex = state.dates.length - 1;
 
-            // Setup slider
-            const slider = document.getElementById('time-slider');
-            slider.max = state.dates.length - 1;
-            slider.value = state.currentDateIndex;
+            // Default to last 14 days of the range
+            state.endDateIndex = state.dates.length - 1;
+            state.startDateIndex = Math.max(0, state.endDateIndex - 13);
 
-            // Display date range
-            document.getElementById('start-date').textContent = formatDate(state.dates[0]);
-            document.getElementById('end-date').textContent = formatDate(state.dates[state.dates.length - 1]);
+            // Setup sliders
+            const sliderStart = document.getElementById('slider-start');
+            const sliderEnd = document.getElementById('slider-end');
+            sliderStart.max = state.dates.length - 1;
+            sliderEnd.max = state.dates.length - 1;
+            sliderStart.value = state.startDateIndex;
+            sliderEnd.value = state.endDateIndex;
+
+            // Initialize range visual
+            updateSliderRange();
 
             // Load vessel track
             await loadVesselTrack();
