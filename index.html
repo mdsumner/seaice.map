@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vessel Track Map Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #map-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #0a0a0a;
+        }
+
+        #canvas {
+            position: absolute;
+            cursor: grab;
+        }
+
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        #controls {
+            background: #2a2a2a;
+            padding: 20px;
+            border-top: 1px solid #404040;
+        }
+
+        #timeline {
+            margin-bottom: 15px;
+        }
+
+        #time-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #404040;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        #time-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+        }
+
+        #time-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+            border: none;
+        }
+
+        #info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 14px;
+        }
+
+        #date-display {
+            font-weight: 600;
+            color: #4a9eff;
+            font-size: 16px;
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: #404040;
+            color: #e0e0e0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #505050;
+        }
+
+        button:active {
+            background: #353535;
+        }
+
+        #loading {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(42, 42, 42, 0.9);
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #999;
+        }
+
+        #zoom-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .zoom-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="map-container">
+            <canvas id="canvas"></canvas>
+            <div id="loading">Loading...</div>
+            <div id="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()">+</button>
+                <button class="zoom-btn" onclick="zoomOut()">−</button>
+                <button class="zoom-btn" onclick="resetView()">⌂</button>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div id="timeline">
+                <input type="range" id="time-slider" min="0" max="13" value="13" step="1">
+            </div>
+            <div id="info">
+                <div id="date-display">Loading...</div>
+                <div class="status" id="status">Initializing...</div>
+                <div class="controls-group">
+                    <button onclick="playAnimation()">▶ Play</button>
+                    <button onclick="stopAnimation()">⏸ Pause</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            imageBaseUrl: 'https://projects.pawsey.org.au/nuyina.map/NOAA/G02135',
+            trackUrl: 'https://raw.githubusercontent.com/mdsumner/seaice.map/refs/heads/main/vessel_track_hourly.json',
+            daysToShow: 14,
+            // These will be loaded from .aux.xml
+            projection: null,
+            extent: null,
+            imageWidth: null,
+            imageHeight: null
+        };
+
+        // State
+        let state = {
+            canvas: null,
+            ctx: null,
+            dates: [],
+            currentDateIndex: 0,
+            currentImage: null,
+            vesselTrack: [],
+            transform: {
+                scale: 1,
+                offsetX: 0,
+                offsetY: 0
+            },
+            isDragging: false,
+            dragStart: { x: 0, y: 0 },
+            animationId: null,
+            imageCache: {},
+            transformer: null // Will be initialized after loading metadata
+        };
+
+        // Generate date range (last 14 days)
+        function generateDates() {
+            const dates = [];
+            // Use fixed end date instead of current date
+            const end = new Date('2025-11-10T00:00:00Z');
+
+            for (let i = CONFIG.daysToShow - 1; i >= 0; i--) {
+                const date = new Date(end);
+                date.setDate(date.getDate() - i);
+                dates.push(date);
+            }
+
+            return dates;
+        }
+
+        // Load and parse GDAL PAM metadata
+        async function loadMetadata(auxUrl) {
+            try {
+                updateStatus('Loading metadata...');
+                const response = await fetch(auxUrl);
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                // Extract SRS (projection)
+                const srsElement = xmlDoc.querySelector('SRS');
+                if (srsElement) {
+                    CONFIG.projection = srsElement.textContent.trim();
+                }
+
+                // Extract GeoTransform
+                const geoTransformElement = xmlDoc.querySelector('GeoTransform');
+                if (geoTransformElement) {
+                    const values = geoTransformElement.textContent.trim().split(',').map(v => parseFloat(v.trim()));
+                    // GeoTransform format: [x_origin, pixel_width, 0, y_origin, 0, -pixel_height]
+                    const xOrigin = values[0];
+                    const pixelWidth = values[1];
+                    const yOrigin = values[3];
+                    const pixelHeight = -values[5]; // Negative in geotransform
+
+                    // Get raster dimensions
+                    const rasterXSize = parseInt(xmlDoc.querySelector('PAMDataset').getAttribute('RasterXSize'));
+                    const rasterYSize = parseInt(xmlDoc.querySelector('PAMDataset').getAttribute('RasterYSize'));
+
+                    CONFIG.imageWidth = rasterXSize;
+                    CONFIG.imageHeight = rasterYSize;
+
+                    // Calculate extent
+                    CONFIG.extent = {
+                        xmin: xOrigin,
+                        xmax: xOrigin + (rasterXSize * pixelWidth),
+                        ymin: yOrigin - (rasterYSize * pixelHeight),
+                        ymax: yOrigin
+                    };
+                }
+
+                // Initialize proj4 transformer
+                proj4.defs('CUSTOM', CONFIG.projection);
+                state.transformer = proj4('EPSG:4326', 'CUSTOM');
+
+                updateStatus('Metadata loaded');
+                console.log('Loaded metadata:', {
+                    projection: CONFIG.projection,
+                    extent: CONFIG.extent,
+                    imageSize: [CONFIG.imageWidth, CONFIG.imageHeight]
+                });
+
+                return true;
+            } catch (e) {
+                console.error('Failed to load metadata:', e);
+                updateStatus('Failed to load metadata');
+                return false;
+            }
+        }
+
+        // Format date as YYYY-MM-DD
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // Get image URL for a date
+        function getImageUrl(date) {
+            const dateStr = formatDate(date);
+            const year = date.getFullYear();
+            return `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
+        }
+
+        // Load image with fallback
+        async function loadImageWithFallback(dateIndex) {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+
+            for (let i = dateIndex; i >= 0; i--) {
+                const date = state.dates[i];
+                const url = getImageUrl(date);
+
+                // Check cache first
+                if (state.imageCache[url]) {
+                    loading.style.display = 'none';
+                    return { image: state.imageCache[url], date };
+                }
+
+                try {
+                    const img = await loadImage(url);
+                    state.imageCache[url] = img;
+                    loading.style.display = 'none';
+                    updateStatus(i === dateIndex ?
+                        'Image loaded' :
+                        `Using fallback from ${formatDate(date)}`);
+                    return { image: img, date };
+                } catch (e) {
+                    // Try previous date
+                    continue;
+                }
+            }
+
+            loading.style.display = 'none';
+            updateStatus('No images available');
+            return null;
+        }
+
+        // Load image promise
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = url;
+            });
+        }
+
+        // Convert lon/lat to pixel coordinates
+        function lonLatToPixel(lon, lat) {
+            // Transform to projected coordinates
+            const [x, y] = state.transformer.forward([lon, lat]);
+
+            // Convert projected coordinates to pixel coordinates
+            const pixelX = ((x - CONFIG.extent.xmin) / (CONFIG.extent.xmax - CONFIG.extent.xmin)) * CONFIG.imageWidth;
+            const pixelY = ((CONFIG.extent.ymax - y) / (CONFIG.extent.ymax - CONFIG.extent.ymin)) * CONFIG.imageHeight;
+
+            return { x: pixelX, y: pixelY };
+        }
+
+        // Load vessel track
+        async function loadVesselTrack() {
+            try {
+                const response = await fetch(CONFIG.trackUrl);
+                const data = await response.json();
+
+                // Convert to pixel coordinates
+                state.vesselTrack = data.map(point => {
+                    const pixels = lonLatToPixel(point.longitude, point.latitude);
+                    return {
+                        datetime: new Date(point.datetime),
+                        x: pixels.x,
+                        y: pixels.y,
+                        lon: point.longitude,
+                        lat: point.latitude
+                    };
+                });
+
+                updateStatus(`Loaded ${state.vesselTrack.length} track points`);
+            } catch (e) {
+                console.error('Failed to load vessel track:', e);
+                updateStatus('Failed to load vessel track');
+            }
+        }
+
+        // Render canvas
+        function render() {
+            const canvas = state.canvas;
+            const ctx = state.ctx;
+
+            // Clear canvas
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (!state.currentImage) return;
+
+            // Calculate transform
+            const scale = state.transform.scale;
+            const offsetX = state.transform.offsetX;
+            const offsetY = state.transform.offsetY;
+
+            // Draw image
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+            ctx.drawImage(state.currentImage, 0, 0, CONFIG.imageWidth, CONFIG.imageHeight);
+            ctx.restore();
+
+            // Draw vessel track
+            if (state.vesselTrack.length > 0) {
+                const currentDate = state.dates[state.currentDateIndex];
+                const relevantPoints = state.vesselTrack.filter(p => p.datetime <= currentDate);
+
+                if (relevantPoints.length > 0) {
+                    // Draw track line
+                    ctx.strokeStyle = '#ff6b6b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+
+                    relevantPoints.forEach((point, i) => {
+                        const x = point.x * scale + offsetX;
+                        const y = point.y * scale + offsetY;
+
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+
+                    ctx.stroke();
+
+                    // Draw current position
+                    const lastPoint = relevantPoints[relevantPoints.length - 1];
+                    const x = lastPoint.x * scale + offsetX;
+                    const y = lastPoint.y * scale + offsetY;
+
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // Update display
+        async function updateDisplay() {
+            const result = await loadImageWithFallback(state.currentDateIndex);
+            if (result) {
+                state.currentImage = result.image;
+                document.getElementById('date-display').textContent = formatDate(result.date);
+                render();
+            }
+        }
+
+        // Fit image to canvas
+        function fitImageToCanvas() {
+            const canvas = state.canvas;
+            const scaleX = canvas.width / CONFIG.imageWidth;
+            const scaleY = canvas.height / CONFIG.imageHeight;
+            const scale = Math.min(scaleX, scaleY);
+
+            state.transform.scale = scale;
+            state.transform.offsetX = (canvas.width - CONFIG.imageWidth * scale) / 2;
+            state.transform.offsetY = (canvas.height - CONFIG.imageHeight * scale) / 2;
+        }
+
+        // Zoom functions
+        function zoomIn() {
+            const canvas = state.canvas;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            zoom(1.2, centerX, centerY);
+        }
+
+        function zoomOut() {
+            const canvas = state.canvas;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            zoom(0.8, centerX, centerY);
+        }
+
+        function zoom(factor, centerX, centerY) {
+            const oldScale = state.transform.scale;
+            const newScale = oldScale * factor;
+
+            // Calculate new offset to zoom towards center point
+            state.transform.offsetX = centerX - (centerX - state.transform.offsetX) * (newScale / oldScale);
+            state.transform.offsetY = centerY - (centerY - state.transform.offsetY) * (newScale / oldScale);
+            state.transform.scale = newScale;
+
+            render();
+        }
+
+        function resetView() {
+            fitImageToCanvas();
+            render();
+        }
+
+        // Animation
+        function playAnimation() {
+            if (state.animationId) return;
+
+            state.animationId = setInterval(() => {
+                if (state.currentDateIndex < state.dates.length - 1) {
+                    state.currentDateIndex++;
+                    document.getElementById('time-slider').value = state.currentDateIndex;
+                    updateDisplay();
+                } else {
+                    stopAnimation();
+                }
+            }, 500);
+        }
+
+        function stopAnimation() {
+            if (state.animationId) {
+                clearInterval(state.animationId);
+                state.animationId = null;
+            }
+        }
+
+        // Update status
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        // Event handlers
+        function setupEventHandlers() {
+            const canvas = state.canvas;
+            const slider = document.getElementById('time-slider');
+
+            // Time slider
+            slider.addEventListener('input', (e) => {
+                state.currentDateIndex = parseInt(e.target.value);
+                updateDisplay();
+            });
+
+            // Mouse wheel zoom
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                zoom(delta, x, y);
+            });
+
+            // Pan
+            canvas.addEventListener('mousedown', (e) => {
+                state.isDragging = true;
+                state.dragStart = { x: e.clientX, y: e.clientY };
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!state.isDragging) return;
+
+                const dx = e.clientX - state.dragStart.x;
+                const dy = e.clientY - state.dragStart.y;
+
+                state.transform.offsetX += dx;
+                state.transform.offsetY += dy;
+
+                state.dragStart = { x: e.clientX, y: e.clientY };
+                render();
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                state.isDragging = false;
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                state.isDragging = false;
+            });
+
+            // Resize
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                fitImageToCanvas();
+                render();
+            });
+        }
+
+        // Resize canvas
+        function resizeCanvas() {
+            const container = document.getElementById('map-container');
+            state.canvas.width = container.clientWidth;
+            state.canvas.height = container.clientHeight;
+        }
+
+        // Initialize
+        async function init() {
+            state.canvas = document.getElementById('canvas');
+            state.ctx = state.canvas.getContext('2d');
+
+            resizeCanvas();
+
+            // Generate dates
+            state.dates = generateDates();
+            state.currentDateIndex = state.dates.length - 1;
+
+            // Setup slider
+            const slider = document.getElementById('time-slider');
+            slider.max = state.dates.length - 1;
+            slider.value = state.currentDateIndex;
+
+            // Load metadata from first available image's .aux.xml
+            let metadataLoaded = false;
+            for (let i = state.dates.length - 1; i >= 0 && !metadataLoaded; i--) {
+                const date = state.dates[i];
+                const imageUrl = getImageUrl(date);
+                const auxUrl = imageUrl + '.aux.xml';
+                metadataLoaded = await loadMetadata(auxUrl);
+            }
+
+            if (!metadataLoaded) {
+                updateStatus('Error: Could not load metadata');
+                return;
+            }
+
+            // Load vessel track
+            await loadVesselTrack();
+
+            // Setup event handlers
+            setupEventHandlers();
+
+            // Initial display
+            fitImageToCanvas();
+            await updateDisplay();
+
+            updateStatus('Ready');
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
