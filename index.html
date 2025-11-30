@@ -625,41 +625,37 @@
         // Load coastline data
         async function loadCoastline() {
             try {
-                // Using Natural Earth 110m coastline (simplified, good for global view)
-                const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json');
+                // Using simplified GeoJSON coastline
+                const response = await fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_coastline.geojson');
                 const data = await response.json();
                 
-                // Convert TopoJSON to GeoJSON-like structure and transform to pixel coordinates
-                // The land-110m format has geometries in longitude/latitude
+                console.log('Coastline data loaded:', data.features.length, 'features');
+                
+                // Convert GeoJSON to pixel coordinates
                 const coastlinePixels = [];
                 
-                // Process the geometries (this is a simplified TopoJSON structure)
-                if (data.objects && data.objects.land && data.objects.land.geometries) {
-                    data.objects.land.geometries.forEach(geom => {
-                        if (geom.type === 'Polygon') {
-                            geom.coordinates.forEach(ring => {
-                                const pixelRing = ring.map(coord => {
-                                    const [lon, lat] = coord;
-                                    return lonLatToPixel(lon, lat);
-                                });
-                                coastlinePixels.push(pixelRing);
+                data.features.forEach(feature => {
+                    if (feature.geometry.type === 'LineString') {
+                        const pixelRing = feature.geometry.coordinates.map(coord => {
+                            const [lon, lat] = coord;
+                            return lonLatToPixel(lon, lat);
+                        });
+                        coastlinePixels.push(pixelRing);
+                    } else if (feature.geometry.type === 'MultiLineString') {
+                        feature.geometry.coordinates.forEach(lineString => {
+                            const pixelRing = lineString.map(coord => {
+                                const [lon, lat] = coord;
+                                return lonLatToPixel(lon, lat);
                             });
-                        } else if (geom.type === 'MultiPolygon') {
-                            geom.coordinates.forEach(polygon => {
-                                polygon.forEach(ring => {
-                                    const pixelRing = ring.map(coord => {
-                                        const [lon, lat] = coord;
-                                        return lonLatToPixel(lon, lat);
-                                    });
-                                    coastlinePixels.push(pixelRing);
-                                });
-                            });
-                        }
-                    });
-                }
+                            coastlinePixels.push(pixelRing);
+                        });
+                    }
+                });
                 
+                console.log('Coastline pixels:', coastlinePixels.length, 'line segments');
                 state.coastline = coastlinePixels;
                 updateStatus('Coastline loaded');
+                render();
             } catch (e) {
                 console.error('Failed to load coastline:', e);
                 updateStatus('Coastline unavailable');
