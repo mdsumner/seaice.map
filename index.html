@@ -746,7 +746,12 @@
                     document.getElementById('slider-end').value = state.endDateIndex;
                     updateSliderRange();
                     updateDisplay();
+                } else if (state.currentPage < state.totalPages - 1) {
+                    // Reached end of current page, advance to next page
+                    setPage(state.currentPage + 1);
+                    // Continue playing
                 } else {
+                    // Reached the very end
                     stopAnimation();
                 }
             }, state.animationSpeed);
@@ -776,7 +781,19 @@
                     document.getElementById('slider-end').value = state.endDateIndex;
                     updateSliderRange();
                     updateDisplay();
+                } else if (state.currentPage > 0) {
+                    // Reached start of current page, go back to previous page
+                    setPage(state.currentPage - 1);
+                    // Set range to end of the new page
+                    state.endDateIndex = state.dates.length - 1;
+                    state.startDateIndex = Math.max(0, state.endDateIndex - rangeDuration);
+                    document.getElementById('slider-start').value = state.startDateIndex;
+                    document.getElementById('slider-end').value = state.endDateIndex;
+                    updateSliderRange();
+                    updateDisplay();
+                    // Continue playing
                 } else {
+                    // Reached the very beginning
                     stopAnimation();
                 }
             }, state.animationSpeed);
