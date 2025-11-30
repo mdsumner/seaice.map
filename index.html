@@ -11,52 +11,52 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1a1a1a;
             color: #e0e0e0;
             overflow: hidden;
         }
-
+        
         #container {
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
-
+        
         #map-container {
             flex: 1;
             position: relative;
             overflow: hidden;
             background: #0a0a0a;
         }
-
+        
         #canvas {
             position: absolute;
             cursor: grab;
         }
-
+        
         #canvas:active {
             cursor: grabbing;
         }
-
+        
         #controls {
             background: #2a2a2a;
             padding: 20px;
             border-top: 1px solid #404040;
         }
-
+        
         #timeline {
             margin-bottom: 15px;
         }
-
+        
         #slider-container {
             position: relative;
             height: 40px;
             margin-bottom: 10px;
         }
-
+        
         .time-slider {
             position: absolute;
             width: 100%;
@@ -67,7 +67,7 @@
             -webkit-appearance: none;
             pointer-events: none;
         }
-
+        
         .time-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -80,7 +80,7 @@
             position: relative;
             z-index: 3;
         }
-
+        
         .time-slider::-moz-range-thumb {
             width: 20px;
             height: 20px;
@@ -90,15 +90,15 @@
             border: none;
             pointer-events: auto;
         }
-
+        
         #slider-end::-webkit-slider-thumb {
             background: #ff6b6b;
         }
-
+        
         #slider-end::-moz-range-thumb {
             background: #ff6b6b;
         }
-
+        
         #slider-track {
             position: absolute;
             height: 8px;
@@ -107,7 +107,7 @@
             width: 100%;
             top: 16px;
         }
-
+        
         #slider-range {
             position: absolute;
             height: 8px;
@@ -116,7 +116,7 @@
             top: 16px;
             cursor: pointer;
         }
-
+        
         #date-range {
             display: flex;
             justify-content: space-between;
@@ -125,7 +125,7 @@
             margin-top: 5px;
             margin-bottom: 10px;
         }
-
+        
         #info {
             display: flex;
             justify-content: space-between;
@@ -134,18 +134,18 @@
             gap: 15px;
             font-size: 14px;
         }
-
+        
         #date-display {
             font-weight: 600;
             color: #4a9eff;
             font-size: 16px;
         }
-
+        
         .controls-group {
             display: flex;
             gap: 10px;
         }
-
+        
         button {
             background: #404040;
             color: #e0e0e0;
@@ -156,15 +156,15 @@
             font-size: 14px;
             transition: background 0.2s;
         }
-
+        
         button:hover {
             background: #505050;
         }
-
+        
         button:active {
             background: #353535;
         }
-
+        
         #loading {
             position: absolute;
             top: 20px;
@@ -175,12 +175,12 @@
             font-size: 14px;
             display: none;
         }
-
+        
         .status {
             font-size: 12px;
             color: #999;
         }
-
+        
         #help-panel {
             position: fixed;
             top: 50%;
@@ -197,11 +197,11 @@
             display: none;
             z-index: 1000;
         }
-
+        
         #help-panel.visible {
             display: block;
         }
-
+        
         #help-overlay {
             position: fixed;
             top: 0;
@@ -212,38 +212,38 @@
             display: none;
             z-index: 999;
         }
-
+        
         #help-overlay.visible {
             display: block;
         }
-
+        
         #help-panel h2 {
             margin-top: 0;
             color: #4a9eff;
         }
-
+        
         #help-panel h3 {
             color: #ff6b6b;
             margin-top: 20px;
             margin-bottom: 10px;
         }
-
+        
         #help-panel ul {
             line-height: 1.6;
             padding-left: 20px;
         }
-
+        
         #help-panel li {
             margin-bottom: 8px;
         }
-
+        
         #help-panel code {
             background: #1a1a1a;
             padding: 2px 6px;
             border-radius: 3px;
             font-family: monospace;
         }
-
+        
         .close-help {
             float: right;
             background: #404040;
@@ -254,11 +254,11 @@
             cursor: pointer;
             font-size: 14px;
         }
-
+        
         .close-help:hover {
             background: #505050;
         }
-
+        
         #zoom-controls {
             position: absolute;
             top: 20px;
@@ -267,7 +267,7 @@
             flex-direction: column;
             gap: 5px;
         }
-
+        
         .zoom-btn {
             width: 36px;
             height: 36px;
@@ -283,7 +283,7 @@
         <div id="help-panel">
             <button class="close-help" onclick="toggleHelp()">✕ Close</button>
             <h2>Vessel Track Map Viewer</h2>
-
+            
             <h3>📅 Timeline Controls</h3>
             <ul>
                 <li><strong>Previous/Next Period:</strong> Navigate between year-long periods (2020-2025)</li>
@@ -292,7 +292,7 @@
                 <li><strong>Blue highlighted bar:</strong> Click and drag to slide the entire time window</li>
                 <li><strong>Vessel track:</strong> Displays only within the selected date range</li>
             </ul>
-
+            
             <h3>▶️ Animation</h3>
             <ul>
                 <li><strong>Play (▶):</strong> Animate the time window forward</li>
@@ -302,7 +302,7 @@
                 <li><strong>End ⏭:</strong> Snap to end of period (or next period if already at end)</li>
                 <li><strong>Speed slider:</strong> Adjust animation speed (0.1s to 2.0s per frame)</li>
             </ul>
-
+            
             <h3>⌨️ Keyboard Shortcuts</h3>
             <ul>
                 <li><strong>Home:</strong> Snap to start (or previous period)</li>
@@ -311,7 +311,7 @@
                 <li><strong>Arrow Left:</strong> Previous period</li>
                 <li><strong>Arrow Right:</strong> Next period</li>
             </ul>
-
+            
             <h3>🗺️ Map Navigation</h3>
             <ul>
                 <li><strong>Click and drag:</strong> Pan the map</li>
@@ -320,14 +320,14 @@
                 <li><strong>− button:</strong> Zoom out at center</li>
                 <li><strong>⌂ button:</strong> Reset to original view</li>
             </ul>
-
+            
             <h3>🚢 Vessel Track</h3>
             <ul>
                 <li><strong>Red line:</strong> Vessel path during selected time range</li>
                 <li><strong>Red dot:</strong> Vessel position at end of range</li>
                 <li><strong>Tip:</strong> Set start = end for a single-day snapshot</li>
             </ul>
-
+            
             <h3>🖼️ Background Images</h3>
             <ul>
                 <li>Background image aligns to the <strong>end date</strong> of the range</li>
@@ -335,7 +335,7 @@
                 <li>Status message shows if a fallback image is being used</li>
             </ul>
         </div>
-
+        
         <div id="map-container">
             <canvas id="canvas"></canvas>
             <div id="loading">Loading...</div>
@@ -345,7 +345,7 @@
                 <button class="zoom-btn" onclick="resetView()">⌂</button>
             </div>
         </div>
-
+        
         <div id="controls">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <div style="display: flex; gap: 10px; align-items: center;">
@@ -377,7 +377,7 @@
                     <button onclick="snapToEnd()" title="Snap to end of period (End)">End ⏭</button>
                     <label style="margin-left: 15px; display: flex; align-items: center; gap: 8px;">
                         Speed:
-                        <input type="range" id="speed-slider" min="100" max="2000" value="500" step="100"
+                        <input type="range" id="speed-slider" min="100" max="2000" value="500" step="100" 
                                style="width: 100px; height: 6px;">
                         <span id="speed-display">0.5s</span>
                     </label>
@@ -402,7 +402,11 @@
             imageWidth: 601,
             imageHeight: 1442,
             daysPerPage: 365,  // Show 1 year per page
-            endDate: new Date('2025-11-10T00:00:00Z'),  // Latest available date
+            endDate: (() => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return today;
+            })(),  // Use today - vessel data up to date, background image falls back to latest available
             startDate: new Date('2020-06-01T00:00:00Z')  // Start from June 1st for seasonal alignment
         };
 
@@ -441,32 +445,32 @@
             const dates = [];
             const start = new Date(CONFIG.startDate);
             const end = new Date(CONFIG.endDate);
-
+            
             let current = new Date(start);
             while (current <= end) {
                 dates.push(new Date(current));
                 current.setDate(current.getDate() + 1);
             }
-
+            
             return dates;
         }
-
+        
         // Get dates for current page
         function getPageDates() {
             const startIdx = state.currentPage * CONFIG.daysPerPage;
             const endIdx = Math.min(startIdx + CONFIG.daysPerPage, state.allDates.length);
             return state.allDates.slice(startIdx, endIdx);
         }
-
+        
         // Update page
         function setPage(pageNum) {
             state.currentPage = Math.max(0, Math.min(pageNum, state.totalPages - 1));
             state.dates = getPageDates();
-
+            
             // Reset range to last 14 days of current page
             state.endDateIndex = state.dates.length - 1;
             state.startDateIndex = Math.max(0, state.endDateIndex - 13);
-
+            
             // Update sliders
             const sliderStart = document.getElementById('slider-start');
             const sliderEnd = document.getElementById('slider-end');
@@ -474,30 +478,30 @@
             sliderEnd.max = state.dates.length - 1;
             sliderStart.value = state.startDateIndex;
             sliderEnd.value = state.endDateIndex;
-
+            
             updateSliderRange();
             updatePageDisplay();
             updateDisplay();
         }
-
+        
         function nextPage() {
             if (state.currentPage < state.totalPages - 1) {
                 setPage(state.currentPage + 1);
             }
         }
-
+        
         function prevPage() {
             if (state.currentPage > 0) {
                 setPage(state.currentPage - 1);
             }
         }
-
+        
         function updatePageDisplay() {
             const pageInfo = document.getElementById('page-info');
             const startDate = formatDate(state.dates[0]);
             const endDate = formatDate(state.dates[state.dates.length - 1]);
             pageInfo.textContent = `Period: ${startDate} to ${endDate} (Page ${state.currentPage + 1}/${state.totalPages})`;
-
+            
             // Enable/disable buttons
             document.getElementById('prev-page').disabled = state.currentPage === 0;
             document.getElementById('next-page').disabled = state.currentPage === state.totalPages - 1;
@@ -513,10 +517,10 @@
             const dateStr = formatDate(date);
             const year = date.getFullYear();
             const url = `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
-
+            
             // Uncomment to use CORS proxy (for testing only):
             return `https://corsproxy.io/?${encodeURIComponent(url)}`;
-
+            
             return url;
         }
 
@@ -524,23 +528,23 @@
         async function loadImageWithFallback(dateIndex) {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
-
+            
             for (let i = dateIndex; i >= 0; i--) {
                 const date = state.dates[i];
                 const url = getImageUrl(date);
-
+                
                 // Check cache first
                 if (state.imageCache[url]) {
                     loading.style.display = 'none';
                     return { image: state.imageCache[url], date };
                 }
-
+                
                 try {
                     const img = await loadImage(url);
                     state.imageCache[url] = img;
                     loading.style.display = 'none';
-                    updateStatus(i === dateIndex ?
-                        'Image loaded' :
+                    updateStatus(i === dateIndex ? 
+                        'Image loaded' : 
                         `Using fallback from ${formatDate(date)}`);
                     return { image: img, date };
                 } catch (e) {
@@ -548,7 +552,7 @@
                     continue;
                 }
             }
-
+            
             loading.style.display = 'none';
             updateStatus('No images available');
             return null;
@@ -569,11 +573,11 @@
         function lonLatToPixel(lon, lat) {
             // Transform to projected coordinates
             const [x, y] = transformer.forward([lon, lat]);
-
+            
             // Convert projected coordinates to pixel coordinates
             const pixelX = ((x - CONFIG.extent.xmin) / (CONFIG.extent.xmax - CONFIG.extent.xmin)) * CONFIG.imageWidth;
             const pixelY = ((CONFIG.extent.ymax - y) / (CONFIG.extent.ymax - CONFIG.extent.ymin)) * CONFIG.imageHeight;
-
+            
             return { x: pixelX, y: pixelY };
         }
 
@@ -582,7 +586,7 @@
             try {
                 const response = await fetch(CONFIG.trackUrl);
                 const data = await response.json();
-
+                
                 // Convert to pixel coordinates
                 state.vesselTrack = data.map(point => {
                     const pixels = lonLatToPixel(point.longitude, point.latitude);
@@ -594,7 +598,7 @@
                         lat: point.latitude
                     };
                 });
-
+                
                 updateStatus(`Loaded ${state.vesselTrack.length} track points`);
             } catch (e) {
                 console.error('Failed to load vessel track:', e);
@@ -606,62 +610,62 @@
         function render() {
             const canvas = state.canvas;
             const ctx = state.ctx;
-
+            
             // Clear canvas
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+            
             if (!state.currentImage) return;
-
+            
             // Calculate transform
             const scale = state.transform.scale;
             const offsetX = state.transform.offsetX;
             const offsetY = state.transform.offsetY;
-
+            
             // Draw image
             ctx.save();
             ctx.translate(offsetX, offsetY);
             ctx.scale(scale, scale);
             ctx.drawImage(state.currentImage, 0, 0, CONFIG.imageWidth, CONFIG.imageHeight);
             ctx.restore();
-
+            
             // Draw vessel track for the selected date range
             if (state.vesselTrack.length > 0) {
                 const startDate = state.dates[state.startDateIndex];
                 const endDate = state.dates[state.endDateIndex];
-                const relevantPoints = state.vesselTrack.filter(p =>
+                const relevantPoints = state.vesselTrack.filter(p => 
                     p.datetime >= startDate && p.datetime <= endDate
                 );
-
+                
                 if (relevantPoints.length > 0) {
                     // Draw track line
                     ctx.strokeStyle = '#ff6b6b';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
-
+                    
                     relevantPoints.forEach((point, i) => {
                         const x = point.x * scale + offsetX;
                         const y = point.y * scale + offsetY;
-
+                        
                         if (i === 0) {
                             ctx.moveTo(x, y);
                         } else {
                             ctx.lineTo(x, y);
                         }
                     });
-
+                    
                     ctx.stroke();
-
+                    
                     // Draw end position (last point in range)
                     const lastPoint = relevantPoints[relevantPoints.length - 1];
                     const x = lastPoint.x * scale + offsetX;
                     const y = lastPoint.y * scale + offsetY;
-
+                    
                     ctx.fillStyle = '#ff6b6b';
                     ctx.beginPath();
                     ctx.arc(x, y, 6, 0, Math.PI * 2);
                     ctx.fill();
-
+                    
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 2;
                     ctx.stroke();
@@ -674,7 +678,7 @@
             const result = await loadImageWithFallback(state.endDateIndex);
             if (result) {
                 state.currentImage = result.image;
-                document.getElementById('date-display').textContent =
+                document.getElementById('date-display').textContent = 
                     `${formatDate(state.dates[state.startDateIndex])} → ${formatDate(result.date)}`;
                 render();
             }
@@ -685,13 +689,13 @@
             const sliderRange = document.getElementById('slider-range');
             const sliderStart = document.getElementById('slider-start');
             const sliderEnd = document.getElementById('slider-end');
-
+            
             const percent1 = (state.startDateIndex / (state.dates.length - 1)) * 100;
             const percent2 = (state.endDateIndex / (state.dates.length - 1)) * 100;
-
+            
             sliderRange.style.left = percent1 + '%';
             sliderRange.style.width = (percent2 - percent1) + '%';
-
+            
             // Update date range display
             document.getElementById('start-date').textContent = formatDate(state.dates[state.startDateIndex]);
             document.getElementById('end-date').textContent = formatDate(state.dates[state.endDateIndex]);
@@ -703,7 +707,7 @@
             const scaleX = canvas.width / CONFIG.imageWidth;
             const scaleY = canvas.height / CONFIG.imageHeight;
             const scale = Math.min(scaleX, scaleY);
-
+            
             state.transform.scale = scale;
             state.transform.offsetX = (canvas.width - CONFIG.imageWidth * scale) / 2;
             state.transform.offsetY = (canvas.height - CONFIG.imageHeight * scale) / 2;
@@ -727,12 +731,12 @@
         function zoom(factor, centerX, centerY) {
             const oldScale = state.transform.scale;
             const newScale = oldScale * factor;
-
+            
             // Calculate new offset to zoom towards center point
             state.transform.offsetX = centerX - (centerX - state.transform.offsetX) * (newScale / oldScale);
             state.transform.offsetY = centerY - (centerY - state.transform.offsetY) * (newScale / oldScale);
             state.transform.scale = newScale;
-
+            
             render();
         }
 
@@ -746,15 +750,15 @@
             if (state.animationId) {
                 stopAnimation();
             }
-
+            
             state.animationId = setInterval(() => {
                 const rangeDuration = state.endDateIndex - state.startDateIndex;
-
+                
                 if (state.endDateIndex < state.dates.length - 1) {
                     // Move both start and end forward by 1, maintaining range duration
                     state.startDateIndex++;
                     state.endDateIndex++;
-
+                    
                     document.getElementById('slider-start').value = state.startDateIndex;
                     document.getElementById('slider-end').value = state.endDateIndex;
                     updateSliderRange();
@@ -776,20 +780,20 @@
                 state.animationId = null;
             }
         }
-
+        
         function playReverse() {
             if (state.animationId) {
                 stopAnimation();
             }
-
+            
             state.animationId = setInterval(() => {
                 const rangeDuration = state.endDateIndex - state.startDateIndex;
-
+                
                 if (state.startDateIndex > 0) {
                     // Move both start and end backward by 1, maintaining range duration
                     state.startDateIndex--;
                     state.endDateIndex--;
-
+                    
                     document.getElementById('slider-start').value = state.startDateIndex;
                     document.getElementById('slider-end').value = state.endDateIndex;
                     updateSliderRange();
@@ -811,17 +815,17 @@
                 }
             }, state.animationSpeed);
         }
-
+        
         function toggleHelp() {
             const helpPanel = document.getElementById('help-panel');
             const helpOverlay = document.getElementById('help-overlay');
             helpPanel.classList.toggle('visible');
             helpOverlay.classList.toggle('visible');
         }
-
+        
         function snapToStart() {
             const rangeDuration = state.endDateIndex - state.startDateIndex;
-
+            
             // If already at the start of current page, go to previous page
             if (state.startDateIndex === 0 && state.currentPage > 0) {
                 setPage(state.currentPage - 1);
@@ -833,16 +837,16 @@
                 state.startDateIndex = 0;
                 state.endDateIndex = Math.min(rangeDuration, state.dates.length - 1);
             }
-
+            
             document.getElementById('slider-start').value = state.startDateIndex;
             document.getElementById('slider-end').value = state.endDateIndex;
             updateSliderRange();
             updateDisplay();
         }
-
+        
         function snapToEnd() {
             const rangeDuration = state.endDateIndex - state.startDateIndex;
-
+            
             // If already at the end of current page, go to next page
             if (state.endDateIndex === state.dates.length - 1 && state.currentPage < state.totalPages - 1) {
                 setPage(state.currentPage + 1);
@@ -854,7 +858,7 @@
                 state.endDateIndex = state.dates.length - 1;
                 state.startDateIndex = Math.max(0, state.endDateIndex - rangeDuration);
             }
-
+            
             document.getElementById('slider-start').value = state.startDateIndex;
             document.getElementById('slider-end').value = state.endDateIndex;
             updateSliderRange();
@@ -871,7 +875,7 @@
             const canvas = state.canvas;
             const sliderStart = document.getElementById('slider-start');
             const sliderEnd = document.getElementById('slider-end');
-
+            
             // Range sliders
             sliderStart.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
@@ -883,7 +887,7 @@
                     e.target.value = state.startDateIndex;
                 }
             });
-
+            
             sliderEnd.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 if (value >= state.startDateIndex) {
@@ -894,37 +898,37 @@
                     e.target.value = state.endDateIndex;
                 }
             });
-
+            
             // Range dragging
             const sliderRange = document.getElementById('slider-range');
             const sliderContainer = document.getElementById('slider-container');
-
+            
             sliderRange.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 state.isRangeDragging = true;
-
+                
                 // Calculate which index the mouse is at
                 const rect = sliderContainer.getBoundingClientRect();
                 const percent = (e.clientX - rect.left) / rect.width;
                 const clickIndex = Math.round(percent * (state.dates.length - 1));
                 state.rangeDragStartIndex = clickIndex;
             });
-
+            
             document.addEventListener('mousemove', (e) => {
                 if (!state.isRangeDragging) return;
-
+                
                 const rect = sliderContainer.getBoundingClientRect();
                 const percent = (e.clientX - rect.left) / rect.width;
                 const currentIndex = Math.round(percent * (state.dates.length - 1));
-
+                
                 // Calculate the offset from where we started dragging
                 const offset = currentIndex - state.rangeDragStartIndex;
-
+                
                 // Calculate new range maintaining the same duration
                 const rangeDuration = state.endDateIndex - state.startDateIndex;
                 let newStartIndex = state.startDateIndex + offset;
                 let newEndIndex = state.endDateIndex + offset;
-
+                
                 // Clamp to valid range
                 if (newStartIndex < 0) {
                     newStartIndex = 0;
@@ -933,28 +937,28 @@
                     newEndIndex = state.dates.length - 1;
                     newStartIndex = newEndIndex - rangeDuration;
                 }
-
+                
                 // Update state and sliders
                 state.startDateIndex = newStartIndex;
                 state.endDateIndex = newEndIndex;
                 state.rangeDragStartIndex = currentIndex;
-
+                
                 sliderStart.value = state.startDateIndex;
                 sliderEnd.value = state.endDateIndex;
-
+                
                 updateSliderRange();
                 updateDisplay();
             });
-
+            
             document.addEventListener('mouseup', () => {
                 state.isRangeDragging = false;
             });
-
+            
             // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
                 // Ignore if typing in an input field
                 if (e.target.tagName === 'INPUT') return;
-
+                
                 if (e.key === 'Home') {
                     e.preventDefault();
                     snapToStart();
@@ -976,21 +980,21 @@
                     nextPage();
                 }
             });
-
+            
             // Speed control
             const speedSlider = document.getElementById('speed-slider');
             const speedDisplay = document.getElementById('speed-display');
-
+            
             speedSlider.addEventListener('input', (e) => {
                 state.animationSpeed = parseInt(e.target.value);
                 speedDisplay.textContent = (state.animationSpeed / 1000).toFixed(1) + 's';
-
+                
                 // Restart animation if currently playing
                 if (state.animationId) {
                     playAnimation();
                 }
             });
-
+            
             // Mouse wheel zoom
             canvas.addEventListener('wheel', (e) => {
                 e.preventDefault();
@@ -1000,34 +1004,34 @@
                 const delta = e.deltaY > 0 ? 0.9 : 1.1;
                 zoom(delta, x, y);
             });
-
+            
             // Pan
             canvas.addEventListener('mousedown', (e) => {
                 state.isDragging = true;
                 state.dragStart = { x: e.clientX, y: e.clientY };
             });
-
+            
             canvas.addEventListener('mousemove', (e) => {
                 if (!state.isDragging) return;
-
+                
                 const dx = e.clientX - state.dragStart.x;
                 const dy = e.clientY - state.dragStart.y;
-
+                
                 state.transform.offsetX += dx;
                 state.transform.offsetY += dy;
-
+                
                 state.dragStart = { x: e.clientX, y: e.clientY };
                 render();
             });
-
+            
             canvas.addEventListener('mouseup', () => {
                 state.isDragging = false;
             });
-
+            
             canvas.addEventListener('mouseleave', () => {
                 state.isDragging = false;
             });
-
+            
             // Resize
             window.addEventListener('resize', () => {
                 resizeCanvas();
@@ -1047,21 +1051,21 @@
         async function init() {
             state.canvas = document.getElementById('canvas');
             state.ctx = state.canvas.getContext('2d');
-
+            
             resizeCanvas();
-
+            
             // Generate all dates and calculate pagination
             state.allDates = generateAllDates();
             state.totalPages = Math.ceil(state.allDates.length / CONFIG.daysPerPage);
             state.currentPage = state.totalPages - 1;  // Start on most recent page
-
+            
             // Get dates for current page
             state.dates = getPageDates();
-
+            
             // Default to last 14 days of the range
             state.endDateIndex = state.dates.length - 1;
             state.startDateIndex = Math.max(0, state.endDateIndex - 13);
-
+            
             // Setup sliders
             const sliderStart = document.getElementById('slider-start');
             const sliderEnd = document.getElementById('slider-end');
@@ -1069,21 +1073,21 @@
             sliderEnd.max = state.dates.length - 1;
             sliderStart.value = state.startDateIndex;
             sliderEnd.value = state.endDateIndex;
-
+            
             // Initialize range visual and page display
             updateSliderRange();
             updatePageDisplay();
-
+            
             // Load vessel track
             await loadVesselTrack();
-
+            
             // Setup event handlers
             setupEventHandlers();
-
+            
             // Initial display
             fitImageToCanvas();
             await updateDisplay();
-
+            
             updateStatus('Ready');
         }
 
