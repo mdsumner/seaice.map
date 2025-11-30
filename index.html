@@ -114,6 +114,7 @@
             background: #4a9eff;
             border-radius: 4px;
             top: 16px;
+            cursor: pointer;
         }
 
         #date-range {
@@ -229,6 +230,12 @@
                 <div class="controls-group">
                     <button onclick="playAnimation()">▶ Play</button>
                     <button onclick="stopAnimation()">⏸ Pause</button>
+                    <label style="margin-left: 15px; display: flex; align-items: center; gap: 8px;">
+                        Speed:
+                        <input type="range" id="speed-slider" min="100" max="2000" value="500" step="100"
+                               style="width: 100px; height: 6px;">
+                        <span id="speed-display">0.5s</span>
+                    </label>
                 </div>
             </div>
         </div>
@@ -268,7 +275,10 @@
             dragStart: { x: 0, y: 0 },
             animationId: null,
             imageCache: {},
-            currentImage: null
+            currentImage: null,
+            isRangeDragging: false,
+            rangeDragStartIndex: 0,
+            animationSpeed: 500  // milliseconds per frame
         };
 
         // Initialize proj4
@@ -531,7 +541,9 @@
 
         // Animation
         function playAnimation() {
-            if (state.animationId) return;
+            if (state.animationId) {
+                stopAnimation();
+            }
 
             state.animationId = setInterval(() => {
                 if (state.endDateIndex < state.dates.length - 1) {
@@ -542,7 +554,7 @@
                 } else {
                     stopAnimation();
                 }
-            }, 500);
+            }, state.animationSpeed);
         }
 
         function stopAnimation() {
@@ -583,6 +595,75 @@
                     updateDisplay();
                 } else {
                     e.target.value = state.endDateIndex;
+                }
+            });
+
+            // Range dragging
+            const sliderRange = document.getElementById('slider-range');
+            const sliderContainer = document.getElementById('slider-container');
+
+            sliderRange.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                state.isRangeDragging = true;
+
+                // Calculate which index the mouse is at
+                const rect = sliderContainer.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                const clickIndex = Math.round(percent * (state.dates.length - 1));
+                state.rangeDragStartIndex = clickIndex;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!state.isRangeDragging) return;
+
+                const rect = sliderContainer.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                const currentIndex = Math.round(percent * (state.dates.length - 1));
+
+                // Calculate the offset from where we started dragging
+                const offset = currentIndex - state.rangeDragStartIndex;
+
+                // Calculate new range maintaining the same duration
+                const rangeDuration = state.endDateIndex - state.startDateIndex;
+                let newStartIndex = state.startDateIndex + offset;
+                let newEndIndex = state.endDateIndex + offset;
+
+                // Clamp to valid range
+                if (newStartIndex < 0) {
+                    newStartIndex = 0;
+                    newEndIndex = rangeDuration;
+                } else if (newEndIndex >= state.dates.length) {
+                    newEndIndex = state.dates.length - 1;
+                    newStartIndex = newEndIndex - rangeDuration;
+                }
+
+                // Update state and sliders
+                state.startDateIndex = newStartIndex;
+                state.endDateIndex = newEndIndex;
+                state.rangeDragStartIndex = currentIndex;
+
+                sliderStart.value = state.startDateIndex;
+                sliderEnd.value = state.endDateIndex;
+
+                updateSliderRange();
+                updateDisplay();
+            });
+
+            document.addEventListener('mouseup', () => {
+                state.isRangeDragging = false;
+            });
+
+            // Speed control
+            const speedSlider = document.getElementById('speed-slider');
+            const speedDisplay = document.getElementById('speed-display');
+
+            speedSlider.addEventListener('input', (e) => {
+                state.animationSpeed = parseInt(e.target.value);
+                speedDisplay.textContent = (state.animationSpeed / 1000).toFixed(1) + 's';
+
+                // Restart animation if currently playing
+                if (state.animationId) {
+                    playAnimation();
                 }
             });
 
