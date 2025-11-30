@@ -515,7 +515,7 @@
             const url = `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
 
             // Uncomment to use CORS proxy (for testing only):
-             return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            return `https://corsproxy.io/?${encodeURIComponent(url)}`;
 
             return url;
         }
@@ -825,9 +825,9 @@
             // If already at the start of current page, go to previous page
             if (state.startDateIndex === 0 && state.currentPage > 0) {
                 setPage(state.currentPage - 1);
-                // Snap to end of the new page
-                state.endDateIndex = state.dates.length - 1;
-                state.startDateIndex = Math.max(0, state.endDateIndex - rangeDuration);
+                // Snap to start of the new page
+                state.startDateIndex = 0;
+                state.endDateIndex = Math.min(rangeDuration, state.dates.length - 1);
             } else {
                 // Snap to start of current page
                 state.startDateIndex = 0;
@@ -846,9 +846,9 @@
             // If already at the end of current page, go to next page
             if (state.endDateIndex === state.dates.length - 1 && state.currentPage < state.totalPages - 1) {
                 setPage(state.currentPage + 1);
-                // Snap to start of the new page
-                state.startDateIndex = 0;
-                state.endDateIndex = Math.min(rangeDuration, state.dates.length - 1);
+                // Snap to end of the new page
+                state.endDateIndex = state.dates.length - 1;
+                state.startDateIndex = Math.max(0, state.endDateIndex - rangeDuration);
             } else {
                 // Snap to end of current page
                 state.endDateIndex = state.dates.length - 1;
