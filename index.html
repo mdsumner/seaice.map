@@ -256,7 +256,12 @@
         function getImageUrl(date) {
             const dateStr = formatDate(date);
             const year = date.getFullYear();
-            return `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
+            const url = `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
+
+            // Uncomment to use CORS proxy (for testing only):
+             return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+
+            return url;
         }
 
         // Load image with fallback
