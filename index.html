@@ -298,7 +298,18 @@
                 <li><strong>Play (▶):</strong> Animate the time window forward</li>
                 <li><strong>Reverse (◀):</strong> Animate the time window backward</li>
                 <li><strong>Pause (⏸):</strong> Stop animation</li>
+                <li><strong>⏮ Start:</strong> Snap to start of period (or previous period if already at start)</li>
+                <li><strong>End ⏭:</strong> Snap to end of period (or next period if already at end)</li>
                 <li><strong>Speed slider:</strong> Adjust animation speed (0.1s to 2.0s per frame)</li>
+            </ul>
+
+            <h3>⌨️ Keyboard Shortcuts</h3>
+            <ul>
+                <li><strong>Home:</strong> Snap to start (or previous period)</li>
+                <li><strong>End:</strong> Snap to end (or next period)</li>
+                <li><strong>Space:</strong> Toggle play/pause animation</li>
+                <li><strong>Arrow Left:</strong> Previous period</li>
+                <li><strong>Arrow Right:</strong> Next period</li>
             </ul>
 
             <h3>🗺️ Map Navigation</h3>
@@ -359,9 +370,11 @@
                 <div id="date-display">Loading...</div>
                 <div class="status" id="status">Initializing...</div>
                 <div class="controls-group">
+                    <button onclick="snapToStart()" title="Snap to start of period (Home)">⏮ Start</button>
                     <button onclick="playReverse()">◀ Reverse</button>
                     <button onclick="playAnimation()">▶ Play</button>
                     <button onclick="stopAnimation()">⏸ Pause</button>
+                    <button onclick="snapToEnd()" title="Snap to end of period (End)">End ⏭</button>
                     <label style="margin-left: 15px; display: flex; align-items: center; gap: 8px;">
                         Speed:
                         <input type="range" id="speed-slider" min="100" max="2000" value="500" step="100"
@@ -502,7 +515,7 @@
             const url = `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
 
             // Uncomment to use CORS proxy (for testing only):
-            return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+             return `https://corsproxy.io/?${encodeURIComponent(url)}`;
 
             return url;
         }
@@ -806,6 +819,48 @@
             helpOverlay.classList.toggle('visible');
         }
 
+        function snapToStart() {
+            const rangeDuration = state.endDateIndex - state.startDateIndex;
+
+            // If already at the start of current page, go to previous page
+            if (state.startDateIndex === 0 && state.currentPage > 0) {
+                setPage(state.currentPage - 1);
+                // Snap to end of the new page
+                state.endDateIndex = state.dates.length - 1;
+                state.startDateIndex = Math.max(0, state.endDateIndex - rangeDuration);
+            } else {
+                // Snap to start of current page
+                state.startDateIndex = 0;
+                state.endDateIndex = Math.min(rangeDuration, state.dates.length - 1);
+            }
+
+            document.getElementById('slider-start').value = state.startDateIndex;
+            document.getElementById('slider-end').value = state.endDateIndex;
+            updateSliderRange();
+            updateDisplay();
+        }
+
+        function snapToEnd() {
+            const rangeDuration = state.endDateIndex - state.startDateIndex;
+
+            // If already at the end of current page, go to next page
+            if (state.endDateIndex === state.dates.length - 1 && state.currentPage < state.totalPages - 1) {
+                setPage(state.currentPage + 1);
+                // Snap to start of the new page
+                state.startDateIndex = 0;
+                state.endDateIndex = Math.min(rangeDuration, state.dates.length - 1);
+            } else {
+                // Snap to end of current page
+                state.endDateIndex = state.dates.length - 1;
+                state.startDateIndex = Math.max(0, state.endDateIndex - rangeDuration);
+            }
+
+            document.getElementById('slider-start').value = state.startDateIndex;
+            document.getElementById('slider-end').value = state.endDateIndex;
+            updateSliderRange();
+            updateDisplay();
+        }
+
         // Update status
         function updateStatus(message) {
             document.getElementById('status').textContent = message;
@@ -893,6 +948,33 @@
 
             document.addEventListener('mouseup', () => {
                 state.isRangeDragging = false;
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ignore if typing in an input field
+                if (e.target.tagName === 'INPUT') return;
+
+                if (e.key === 'Home') {
+                    e.preventDefault();
+                    snapToStart();
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    snapToEnd();
+                } else if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    if (state.animationId) {
+                        stopAnimation();
+                    } else {
+                        playAnimation();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevPage();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nextPage();
+                }
             });
 
             // Speed control
