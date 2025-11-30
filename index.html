@@ -310,8 +310,7 @@
             const dateStr = formatDate(date);
             const year = date.getFullYear();
             const url = `${CONFIG.imageBaseUrl}/${year}/concentration_v4.0_${dateStr}.png`;
-
-//fixme: put in bucket and turn this off
+            // FIXME
             // Uncomment to use CORS proxy (for testing only):
             return `https://corsproxy.io/?${encodeURIComponent(url)}`;
 
@@ -546,8 +545,14 @@
             }
 
             state.animationId = setInterval(() => {
+                const rangeDuration = state.endDateIndex - state.startDateIndex;
+
                 if (state.endDateIndex < state.dates.length - 1) {
+                    // Move both start and end forward by 1, maintaining range duration
+                    state.startDateIndex++;
                     state.endDateIndex++;
+
+                    document.getElementById('slider-start').value = state.startDateIndex;
                     document.getElementById('slider-end').value = state.endDateIndex;
                     updateSliderRange();
                     updateDisplay();
