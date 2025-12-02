@@ -426,6 +426,17 @@
             extent: null,
             imageWidth: null,
             imageHeight: null
+
+            // FALLBACK: Uncomment to manually specify metadata (for testing without .aux.xml)
+            // projection: '+proj=tmerc +lat_0=0 +lon_0=115 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+            // extent: {
+            //     xmin: -6007500,
+            //     xmax: 6012500,
+            //     ymin: -14422000,
+            //     ymax: 14418000
+            // },
+            // imageWidth: 601,
+            // imageHeight: 1442
         };
 
         // State
@@ -1280,18 +1291,25 @@
             // Get dates for current page
             state.dates = getPageDates();
 
-            // Load metadata from first available image's .aux.xml
-            let metadataLoaded = false;
-            for (let i = state.dates.length - 1; i >= 0 && !metadataLoaded; i--) {
-                const date = state.dates[i];
-                const imageUrl = getImageUrl(date);
-                const auxUrl = imageUrl + '.aux.xml';
-                metadataLoaded = await loadMetadata(auxUrl);
-            }
+            // Load metadata from .aux.xml (if not manually specified)
+            if (CONFIG.projection === null) {
+                let metadataLoaded = false;
+                for (let i = state.dates.length - 1; i >= 0 && !metadataLoaded; i--) {
+                    const date = state.dates[i];
+                    const imageUrl = getImageUrl(date);
+                    const auxUrl = imageUrl + '.aux.xml';
+                    metadataLoaded = await loadMetadata(auxUrl);
+                }
 
-            if (!metadataLoaded) {
-                updateStatus('Error: Could not load metadata');
-                return;
+                if (!metadataLoaded) {
+                    updateStatus('Error: Could not load metadata');
+                    return;
+                }
+            } else {
+                // Using manually specified metadata
+                proj4.defs('CUSTOM', CONFIG.projection);
+                state.transformer = proj4('EPSG:4326', 'CUSTOM');
+                updateStatus('Using manual metadata');
             }
 
             // Default to last 14 days of the range
