@@ -8,3 +8,4 @@ data-raw/seaice.tif
 _mkapp.R
 _targets
 .quarto
+_s3_markers
