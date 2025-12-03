@@ -292,6 +292,44 @@
         #coastline-toggle.active {
             background: #4a9eff;
         }
+
+        #external-links {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(26, 26, 26, 0.9);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .link-group-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .link-group-label:first-child {
+            margin-top: 0;
+        }
+
+        .external-link {
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            transition: background 0.2s;
+            display: block;
+        }
+
+        .external-link:hover {
+            background: rgba(74, 158, 255, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -362,6 +400,16 @@
                 <button class="zoom-btn" onclick="resetView()">⌂</button>
                 <button class="zoom-btn" onclick="toggleCoastline()" id="coastline-toggle" title="Toggle coastline">🗺️</button>
             </div>
+            <div id="external-links">
+                <div class="link-group-label">📍 Vessel Position</div>
+                <a id="link-vessel-esa" class="external-link" href="#" target="_blank">🛰️ ESA Copernicus</a>
+                <a id="link-vessel-maxar" class="external-link" href="#" target="_blank">📷 Maxar Xpress</a>
+                <a id="link-vessel-gmap" class="external-link" href="#" target="_blank">🗺️ Google Maps</a>
+                <div class="link-group-label">🎯 View Center</div>
+                <a id="link-view-esa" class="external-link" href="#" target="_blank">🛰️ ESA Copernicus</a>
+                <a id="link-view-maxar" class="external-link" href="#" target="_blank">📷 Maxar Xpress</a>
+                <a id="link-view-gmap" class="external-link" href="#" target="_blank">🗺️ Google Maps</a>
+            </div>
         </div>
 
         <div id="controls">
@@ -413,7 +461,7 @@
         // Configuration
         const CONFIG = {
             imageBaseUrl: 'https://projects.pawsey.org.au/nuyina.map/NOAA/G02135',
-            trackUrl: 'https://projects.pawsey.org.au/nuyina.map/vessel_track_hourly.json',
+            trackUrl: 'https://projects.pawsey.org.au/nuyina.map/vessel/vessel_track_hourly.json',
             daysPerPage: 365,  // Show 1 year per page
             endDate: (() => {
                 const today = new Date();
@@ -421,22 +469,20 @@
                 return today;
             })(),  // Use today - vessel data up to date, background image falls back to latest available
             startDate: new Date('2020-06-01T00:00:00Z'),  // Start from June 1st for seasonal alignment
-            // Metadata loaded from .aux.xml
-            projection: null,
-            extent: null,
-            imageWidth: null,
-            imageHeight: null
+            // Hardcoded metadata (WKT from .aux.xml not supported by proj4js)
+            projection: '+proj=tmerc +lat_0=0 +lon_0=115 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+            extent: {
+                xmin: -6007500,
+                xmax: 6012500,
+                ymin: -14422000,
+                ymax: 14418000
+            },
+            imageWidth: 601,
+            imageHeight: 1442
 
-            // FALLBACK: Uncomment to manually specify metadata (for testing without .aux.xml)
-            // projection: '+proj=tmerc +lat_0=0 +lon_0=115 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
-            // extent: {
-            //     xmin: -6007500,
-            //     xmax: 6012500,
-            //     ymin: -14422000,
-            //     ymax: 14418000
-            // },
-            // imageWidth: 601,
-            // imageHeight: 1442
+            // NOTE: .aux.xml metadata loading available but WKT format not supported by proj4js
+            // To use .aux.xml, set projection/extent/imageWidth/imageHeight to null
+            // and ensure .aux.xml contains PROJ.4 format string (not WKT)
         };
 
         // State
@@ -512,8 +558,14 @@
                 }
 
                 // Initialize proj4 transformer
+                console.log('Creating proj4 transformer with projection:', CONFIG.projection.substring(0, 100) + '...');
                 proj4.defs('CUSTOM', CONFIG.projection);
                 state.transformer = proj4('EPSG:4326', 'CUSTOM');
+                console.log('Transformer created:', state.transformer);
+
+                // Test the transformer
+                const testResult = state.transformer.forward([147, -43]);
+                console.log('Test transform [147, -43] =>', testResult);
 
                 updateStatus('Metadata loaded');
                 console.log('Loaded metadata:', {
@@ -673,13 +725,19 @@
         // Convert lon/lat to pixel coordinates
         function lonLatToPixel(lon, lat) {
             // Transform to projected coordinates
-            const [x, y] = state.transformer.forward([lon, lat]);
+            try {
+                const result = state.transformer.forward([lon, lat]);
+                const [x, y] = result;
 
-            // Convert projected coordinates to pixel coordinates
-            const pixelX = ((x - CONFIG.extent.xmin) / (CONFIG.extent.xmax - CONFIG.extent.xmin)) * CONFIG.imageWidth;
-            const pixelY = ((CONFIG.extent.ymax - y) / (CONFIG.extent.ymax - CONFIG.extent.ymin)) * CONFIG.imageHeight;
+                // Convert projected coordinates to pixel coordinates
+                const pixelX = ((x - CONFIG.extent.xmin) / (CONFIG.extent.xmax - CONFIG.extent.xmin)) * CONFIG.imageWidth;
+                const pixelY = ((CONFIG.extent.ymax - y) / (CONFIG.extent.ymax - CONFIG.extent.ymin)) * CONFIG.imageHeight;
 
-            return { x: pixelX, y: pixelY };
+                return { x: pixelX, y: pixelY };
+            } catch (e) {
+                console.error('Transform error for', lon, lat, ':', e.message);
+                return { x: NaN, y: NaN };
+            }
         }
 
         // Load coastline data
@@ -783,11 +841,104 @@
             render();
         }
 
+        // Update external links based on current vessel position
+        function updateExternalLinks() {
+            const endDate = state.dates[state.endDateIndex];
+
+            // Format date for ESA (end date of range)
+            const esaDate = formatDate(endDate);
+            const fromTime = `${esaDate}T00:00:00.000Z`;
+            const toTime = `${esaDate}T23:59:59.999Z`;
+
+            // Update vessel position links
+            let vesselLat = null;
+            let vesselLon = null;
+
+            if (state.vesselTrack.length > 0) {
+                const startDate = state.dates[state.startDateIndex];
+                const relevantPoints = state.vesselTrack.filter(p =>
+                    p.datetime >= startDate && p.datetime <= endDate
+                );
+
+                if (relevantPoints.length > 0) {
+                    const lastPoint = relevantPoints[relevantPoints.length - 1];
+                    vesselLat = lastPoint.lat;
+                    vesselLon = lastPoint.lon;
+                }
+            }
+
+            // If we have vessel position, update vessel links
+            if (vesselLat !== null && vesselLon !== null) {
+                // ESA Copernicus Browser
+                const esaUrl = `https://browser.dataspace.copernicus.eu/?zoom=12&lat=${vesselLat}&lng=${vesselLon}&fromTime=${encodeURIComponent(fromTime)}&toTime=${encodeURIComponent(toTime)}&datasetId=S2_L2A_CDAS&cloudCoverage=30&dateMode=SINGLE`;
+                document.getElementById('link-vessel-esa').href = esaUrl;
+
+                // Maxar Xpress
+                const maxarUrl = `https://xpress.maxar.com/?lat=${vesselLat}&lon=${vesselLon}&zoom=10`;
+                document.getElementById('link-vessel-maxar').href = maxarUrl;
+
+                // Google Maps
+                const gmapUrl = `https://www.google.com/maps/@${vesselLat},${vesselLon},30000m/data=!3m1!1e3`;
+                document.getElementById('link-vessel-gmap').href = gmapUrl;
+            }
+
+            // Update view center links
+            updateViewCenterLinks(fromTime, toTime);
+        }
+
+        // Convert pixel coordinates to lon/lat (inverse transform)
+        function pixelToLonLat(pixelX, pixelY) {
+            // Convert pixel to projected coordinates
+            const x = CONFIG.extent.xmin + (pixelX / CONFIG.imageWidth) * (CONFIG.extent.xmax - CONFIG.extent.xmin);
+            const y = CONFIG.extent.ymax - (pixelY / CONFIG.imageHeight) * (CONFIG.extent.ymax - CONFIG.extent.ymin);
+
+            // Inverse transform from projected to lon/lat
+            const [lon, lat] = state.transformer.inverse([x, y]);
+            return { lon, lat };
+        }
+
+        // Update view center links based on current pan/zoom
+        function updateViewCenterLinks(fromTime, toTime) {
+            if (!state.transformer || !CONFIG.imageWidth) return;
+
+            const canvas = state.canvas;
+            const scale = state.transform.scale;
+            const offsetX = state.transform.offsetX;
+            const offsetY = state.transform.offsetY;
+
+            // Calculate center of view in pixel coordinates
+            const viewCenterX = (canvas.width / 2 - offsetX) / scale;
+            const viewCenterY = (canvas.height / 2 - offsetY) / scale;
+
+            // Convert to lon/lat
+            const center = pixelToLonLat(viewCenterX, viewCenterY);
+            const lat = center.lat;
+            const lon = center.lon;
+
+            // ESA Copernicus Browser
+            const esaUrl = `https://browser.dataspace.copernicus.eu/?zoom=12&lat=${lat}&lng=${lon}&fromTime=${encodeURIComponent(fromTime)}&toTime=${encodeURIComponent(toTime)}&datasetId=S2_L2A_CDAS&cloudCoverage=30&dateMode=SINGLE`;
+            document.getElementById('link-view-esa').href = esaUrl;
+
+            // Maxar Xpress
+            const maxarUrl = `https://xpress.maxar.com/?lat=${lat}&lon=${lon}&zoom=10`;
+            document.getElementById('link-view-maxar').href = maxarUrl;
+
+            // Google Maps
+            const gmapUrl = `https://www.google.com/maps/@${lat},${lon},30000m/data=!3m1!1e3`;
+            document.getElementById('link-view-gmap').href = gmapUrl;
+        }
+
         // Load vessel track
         async function loadVesselTrack() {
+            console.log('Starting to load vessel track from:', CONFIG.trackUrl);
             try {
                 const response = await fetch(CONFIG.trackUrl);
+                console.log('Vessel track response status:', response.status);
                 const data = await response.json();
+
+                console.log('Vessel track raw data:', data.length, 'points');
+                console.log('First point:', data[0]);
+                console.log('Last point:', data[data.length - 1]);
 
                 // Convert to pixel coordinates
                 state.vesselTrack = data.map(point => {
@@ -800,6 +951,9 @@
                         lat: point.latitude
                     };
                 });
+
+                console.log('Vessel track converted:', state.vesselTrack.length, 'points');
+                console.log('First converted:', state.vesselTrack[0]);
 
                 updateStatus(`Loaded ${state.vesselTrack.length} track points`);
             } catch (e) {
@@ -896,6 +1050,15 @@
                     ctx.stroke();
                 }
             }
+
+            // Update view center links after render (for pan/zoom changes)
+            if (state.dates && state.dates.length > 0) {
+                const endDate = state.dates[state.endDateIndex];
+                const esaDate = formatDate(endDate);
+                const fromTime = `${esaDate}T00:00:00.000Z`;
+                const toTime = `${esaDate}T23:59:59.999Z`;
+                updateViewCenterLinks(fromTime, toTime);
+            }
         }
 
         // Update display
@@ -906,6 +1069,7 @@
                 document.getElementById('date-display').textContent =
                     `${formatDate(state.dates[state.startDateIndex])} → ${formatDate(result.date)}`;
                 render();
+                updateExternalLinks();
             }
         }
 
