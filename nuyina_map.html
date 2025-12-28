@@ -678,10 +678,15 @@
         }
 
         // Load image with fallback
+        // Searches backwards from the selected date, falling back to earlier dates if image not available
+        // This allows the slider to extend beyond available images while showing the latest available image
         async function loadImageWithFallback(dateIndex) {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
 
+            const targetDate = state.dates[dateIndex];
+
+            // First, try images from current page (from dateIndex back to start of page)
             for (let i = dateIndex; i >= 0; i--) {
                 const date = state.dates[i];
                 const url = getImageUrl(date);
@@ -689,6 +694,10 @@
                 // Check cache first
                 if (state.imageCache[url]) {
                     loading.style.display = 'none';
+                    const isFallback = date.getTime() !== targetDate.getTime();
+                    updateStatus(isFallback ?
+                        `Using fallback image from ${formatDate(date)}` :
+                        'Image loaded');
                     return { image: state.imageCache[url], date };
                 }
 
@@ -696,9 +705,36 @@
                     const img = await loadImage(url);
                     state.imageCache[url] = img;
                     loading.style.display = 'none';
-                    updateStatus(i === dateIndex ?
-                        'Image loaded' :
-                        `Using fallback from ${formatDate(date)}`);
+                    const isFallback = date.getTime() !== targetDate.getTime();
+                    updateStatus(isFallback ?
+                        `Using fallback image from ${formatDate(date)}` :
+                        'Image loaded');
+                    return { image: img, date };
+                } catch (e) {
+                    // Try previous date
+                    continue;
+                }
+            }
+
+            // If we're not on the first page, search previous pages for an available image
+            // Calculate global index and search backwards through allDates
+            const globalStartIndex = state.currentPage * CONFIG.daysPerPage;
+            for (let globalIdx = globalStartIndex - 1; globalIdx >= 0; globalIdx--) {
+                const date = state.allDates[globalIdx];
+                const url = getImageUrl(date);
+
+                // Check cache first
+                if (state.imageCache[url]) {
+                    loading.style.display = 'none';
+                    updateStatus(`Using fallback image from ${formatDate(date)}`);
+                    return { image: state.imageCache[url], date };
+                }
+
+                try {
+                    const img = await loadImage(url);
+                    state.imageCache[url] = img;
+                    loading.style.display = 'none';
+                    updateStatus(`Using fallback image from ${formatDate(date)}`);
                     return { image: img, date };
                 } catch (e) {
                     // Try previous date
@@ -954,11 +990,22 @@
 
                 console.log('Vessel track converted:', state.vesselTrack.length, 'points');
                 console.log('First converted:', state.vesselTrack[0]);
-               console.log('Last converted:', state.vesselTrack[state.vesselTrack.length-1]);
+                console.log('Last converted:', state.vesselTrack[state.vesselTrack.length-1]);
                 updateStatus(`Loaded ${state.vesselTrack.length} track points`);
+
+                // Return the date range of the vessel track
+                if (state.vesselTrack.length > 0) {
+                    const trackDates = state.vesselTrack.map(p => p.datetime);
+                    return {
+                        minDate: new Date(Math.min(...trackDates)),
+                        maxDate: new Date(Math.max(...trackDates))
+                    };
+                }
+                return null;
             } catch (e) {
                 console.error('Failed to load vessel track:', e);
                 updateStatus('Failed to load vessel track');
+                return null;
             }
         }
 
@@ -1447,34 +1494,35 @@
 
             resizeCanvas();
 
-            // Generate all dates and calculate pagination
-            state.allDates = generateAllDates();
-            state.totalPages = Math.ceil(state.allDates.length / CONFIG.daysPerPage);
-            state.currentPage = state.totalPages - 1;  // Start on most recent page
-
-            // Get dates for current page
-            state.dates = getPageDates();
-
-            // Load metadata from .aux.xml (if not manually specified)
+            // Initialize proj4 transformer first (needed for vessel track coordinate conversion)
             if (CONFIG.projection === null) {
-                let metadataLoaded = false;
-                for (let i = state.dates.length - 1; i >= 0 && !metadataLoaded; i--) {
-                    const date = state.dates[i];
-                    const imageUrl = getImageUrl(date);
-                    const auxUrl = imageUrl + '.aux.xml';
-                    metadataLoaded = await loadMetadata(auxUrl);
-                }
-
-                if (!metadataLoaded) {
-                    updateStatus('Error: Could not load metadata');
-                    return;
-                }
+                // Would need to load metadata here, but we have hardcoded values
+                updateStatus('Error: No projection defined');
+                return;
             } else {
                 // Using manually specified metadata
                 proj4.defs('CUSTOM', CONFIG.projection);
                 state.transformer = proj4('EPSG:4326', 'CUSTOM');
                 updateStatus('Using manual metadata');
             }
+
+            // Load vessel track FIRST to determine date range
+            const trackRange = await loadVesselTrack();
+
+            // Extend CONFIG.endDate if vessel track has data beyond today
+            if (trackRange && trackRange.maxDate > CONFIG.endDate) {
+                console.log('Extending date range to match vessel track:', trackRange.maxDate);
+                CONFIG.endDate = new Date(trackRange.maxDate);
+                CONFIG.endDate.setHours(23, 59, 59, 999);  // End of day
+            }
+
+            // Generate all dates and calculate pagination (now includes vessel track range)
+            state.allDates = generateAllDates();
+            state.totalPages = Math.ceil(state.allDates.length / CONFIG.daysPerPage);
+            state.currentPage = state.totalPages - 1;  // Start on most recent page
+
+            // Get dates for current page
+            state.dates = getPageDates();
 
             // Default to last 14 days of the range
             state.endDateIndex = state.dates.length - 1;
@@ -1491,9 +1539,6 @@
             // Initialize range visual and page display
             updateSliderRange();
             updatePageDisplay();
-
-            // Load vessel track
-            await loadVesselTrack();
 
             // Load coastline
             await loadCoastline();
