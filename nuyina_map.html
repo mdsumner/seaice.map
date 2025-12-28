@@ -1003,7 +1003,7 @@
                         if (dt < minDate) minDate = dt;
                         if (dt > maxDate) maxDate = dt;
                     }
-                    console.log('Track date range:', minDate, 'to', maxDate);
+                    console.log('Track date range:', minDate.toISOString(), 'to', maxDate.toISOString());
                     return { minDate, maxDate };
                 }
                 return null;
@@ -1514,11 +1514,20 @@
             // Load vessel track FIRST to determine date range
             const trackRange = await loadVesselTrack();
 
-            // Extend CONFIG.endDate if vessel track has data beyond today
-            if (trackRange && trackRange.maxDate > CONFIG.endDate) {
-                console.log('Extending date range to match vessel track:', trackRange.maxDate);
-                CONFIG.endDate = new Date(trackRange.maxDate);
-                CONFIG.endDate.setHours(23, 59, 59, 999);  // End of day
+            // Debug: show current CONFIG.endDate
+            console.log('CONFIG.endDate before check:', CONFIG.endDate.toISOString());
+
+            // Extend CONFIG.endDate if vessel track has data beyond current endDate
+            if (trackRange) {
+                console.log('Track maxDate:', trackRange.maxDate.toISOString());
+                console.log('Comparison result:', trackRange.maxDate > CONFIG.endDate);
+
+                if (trackRange.maxDate > CONFIG.endDate) {
+                    console.log('Extending date range to match vessel track');
+                    CONFIG.endDate = new Date(trackRange.maxDate);
+                    CONFIG.endDate.setUTCHours(23, 59, 59, 999);  // End of day UTC
+                    console.log('New CONFIG.endDate:', CONFIG.endDate.toISOString());
+                }
             }
 
             // Generate all dates and calculate pagination (now includes vessel track range)
