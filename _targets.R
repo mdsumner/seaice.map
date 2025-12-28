@@ -8,7 +8,7 @@ bucket <- "nuyina.map"
 prefix <- "NOAA/G02135"
 rootdir <- sprintf("s3://%s/%s", bucket, prefix)
 
-ncpus <- 8
+ncpus <- 6
 tar_option_set(
   controller = if (ncpus <= 1) NULL else crew::crew_controller_local(workers = ncpus),
   format = "qs"
@@ -47,12 +47,12 @@ tar_assign({
   source <-  get_s3_path(image_markers) |> tar_target(pattern = map(image_markers))
   png <- get_s3_path(image_png_markers)|> tar_target(pattern = map(image_png_markers))
   sources <- tibble::tibble(date = northsouth$date, source = source, png = png) |> tar_target()
-
+  jsonurl <- update_vessel() |> tar_target(cue = tar_cue(mode = "always"))
   ## can't get this to work to overwrite
-  index <- write_index(sources, sprintf("/vsis3/%s/seaice_image_index.parquet", bucket)) |>
-     tar_target(format = "file")
-
-  index_path <- get_s3_path(index) |> tar_target()
+  # index <- write_index(sources, sprintf("/vsis3/%s/seaice_image_index.parquet", bucket)) |>
+  #    tar_target(format = "file")
+  #
+  # index_path <- get_s3_path(index) |> tar_target()
 })
 
 

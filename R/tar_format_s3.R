@@ -32,12 +32,44 @@ get_s3_etag <- function(vsis3_uri, endpoint = "projects.pawsey.org.au") {
 
   attr(obj_info, "etag")
 }
+
+# Do this once (or a few times):
+get_all_etags <- function(bucket, prefix) {
+  set_gdal_s3_config()
+  # LIST returns up to 1000 objects with ETags
+  objects <- aws.s3::get_bucket(
+    bucket = bucket,
+    prefix = prefix,
+    base_url = Sys.getenv("AWS_S3_ENDPOINT"),
+    region = "",
+    max = Inf  # paginate automatically
+  )
+
+  # Returns data frame with Key and ETag
+  tibble::tibble(
+    key = sapply(objects, `[[`, "Key"),
+    etag = sapply(objects, `[[`, "ETag")
+  )
+}
 # R/s3_helpers.R
 create_s3_marker <- function(vsis3_uri, marker_dir = "_s3_markers") {
   dir.create(marker_dir, showWarnings = FALSE, recursive = TRUE)
 
   # Get ETag from S3
   etag <- get_s3_etag(vsis3_uri)
+
+  # Create marker file path
+  marker_name <- paste0(digest::digest(vsis3_uri), ".txt")
+  marker_file <- file.path(marker_dir, marker_name)
+
+  # Write BOTH the S3 path and ETag to marker file
+  writeLines(c(vsis3_uri, etag), marker_file)
+
+  marker_file
+}
+
+create_s3_marker_from_etag <- function(vsis3_uri, etag, marker_dir = "_s3_markers") {
+  dir.create(marker_dir, showWarnings = FALSE, recursive = TRUE)
 
   # Create marker file path
   marker_name <- paste0(digest::digest(vsis3_uri), ".txt")

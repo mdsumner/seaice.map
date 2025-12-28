@@ -21,6 +21,7 @@ sea_ice_image <- function(x) {
 }
 
 sea_ice_image_png <- function(x) {
+  set_gdal_s3_config()
   x <- gsub("s3://", "/vsis3", x)
   vsis3_uri <- gsub("\\.tif$", ".png", x)
   gdalraster::translate(x, vsis3_uri)

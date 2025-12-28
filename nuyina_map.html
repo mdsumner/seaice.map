@@ -954,7 +954,7 @@
 
                 console.log('Vessel track converted:', state.vesselTrack.length, 'points');
                 console.log('First converted:', state.vesselTrack[0]);
-
+               console.log('Last converted:', state.vesselTrack[state.vesselTrack.length-1]);
                 updateStatus(`Loaded ${state.vesselTrack.length} track points`);
             } catch (e) {
                 console.error('Failed to load vessel track:', e);

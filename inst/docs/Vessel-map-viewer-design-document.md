@@ -32,7 +32,7 @@ Visualize the RSV Nuyina's movements through Antarctic waters in relation to sea
 ### Data Sources
 1. **Satellite Imagery**: Daily PNG files (sea ice concentration from NOAA)
 2. **Vessel Track**: JSON file with hourly position data (longitude, latitude, datetime)
-3. **Projection Metadata**: GDAL PAM XML files (.aux.xml) for automatic configuration
+3. **Projection Metadata**: Hardcoded PROJ.4 string (see Known Limitations section)
 4. **Coastline Data**: GeoJSON from Natural Earth via CDN
 
 ### Key Design Decision: No Web Mapping Library
@@ -110,23 +110,26 @@ Visualize the RSV Nuyina's movements through Antarctic waters in relation to sea
 - Automatically pages when reaching period boundaries
 - Spacebar toggles play/pause for keyboard-driven workflow
 
-### 4. Automatic Metadata Loading
+### 4. Projection Configuration
 
-**Feature**: Read projection, extent, and dimensions from GDAL .aux.xml sidecar files.
+**Feature**: Coordinate transformation from WGS84 lon/lat to custom projection pixel coordinates.
 
-**Rationale**:
-- Eliminates need to hardcode projection parameters
-- Supports easy switching between projections/regions
-- Single source of truth (matches the imagery exactly)
-- Standard GDAL format ensures compatibility
+**Current Implementation**: Hardcoded PROJ.4 string in CONFIG:
+```javascript
+projection: '+proj=tmerc +lat_0=0 +lon_0=115 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+extent: {
+    xmin: -6007500,
+    xmax: 6012500,
+    ymin: -14422000,
+    ymax: 14418000
+},
+imageWidth: 601,
+imageHeight: 1442
+```
 
-**Implementation**:
-- Parses PAM XML on startup
-- Extracts SRS (projection string), GeoTransform, and raster dimensions
-- Falls back through dates if most recent .aux.xml unavailable
-- Initializes proj4js transformer automatically
+**Design Intent**: The viewer was designed to support automatic metadata loading from GDAL PAM .aux.xml sidecar files. This would eliminate hardcoding and allow the viewer to adapt automatically when imagery changes projection or extent.
 
-**Workflow**: Update imagery → no code changes needed → viewer adapts automatically
+**Known Limitation**: See "WKT vs PROJ.4 Format" section below.
 
 ### 5. Image Fallback System
 
@@ -191,7 +194,7 @@ if (distance > maxSegmentLength) {
 }
 ```
 
-**Benefit**: Works for any projection orientation (vertical or horizontal discontinuities).
+**Benefit**: Works for any projection orientation (vertical or horizontal discontinuities). The Euclidean distance check catches long jumps whether they're vertical, horizontal, or diagonal.
 
 ### 8. Precise Datetime Readouts
 
@@ -221,6 +224,80 @@ if (distance > maxSegmentLength) {
 - `Space`: Toggle play/pause
 - `←/→`: Previous/next period
 
+### 10. External Imagery Links
+
+**Feature**: Dynamic links to external imagery providers centered on current view or vessel position.
+
+**Rationale**:
+- Users often want to see higher-resolution imagery of interesting locations
+- Multiple providers offer different imagery sources and temporal coverage
+- Links should update automatically as the user navigates
+
+**Implementation**: Two sets of links in bottom-right corner:
+
+**📍 Vessel Position Links**:
+- Centered on the vessel's position at the end of the selected time range
+- Updates when time slider changes
+- ESA link includes the current date for temporal filtering
+
+**🎯 View Center Links**:
+- Centered on whatever the user is currently viewing (map center after pan/zoom)
+- Updates in real-time as user pans and zooms
+- Uses inverse projection to convert pixel coordinates back to lon/lat
+
+**Supported Providers**:
+- **ESA Copernicus Browser**: Sentinel-2 imagery with date filtering
+- **Maxar Xpress**: Commercial high-resolution imagery
+- **Google Maps**: Satellite view for general context
+
+**URL Construction Example (ESA)**:
+```javascript
+const esaUrl = `https://browser.dataspace.copernicus.eu/?zoom=12&lat=${lat}&lng=${lon}&fromTime=${fromTime}&toTime=${toTime}&datasetId=S2_L2A_CDAS&cloudCoverage=30&dateMode=SINGLE`;
+```
+
+## Known Limitations
+
+### WKT vs PROJ.4 Format
+
+**Issue**: The viewer was designed to automatically load projection metadata from GDAL PAM .aux.xml sidecar files. However, GDAL writes projection information in WKT (Well-Known Text) format, which proj4js cannot reliably parse.
+
+**Background**:
+- GDAL's PAM files contain WKT or WKT2 projection strings
+- proj4js has partial WKT support, but it's inconsistent with complex/extended WKT
+- The PROJ C library handles WKT perfectly, but proj4js is a JavaScript reimplementation with limited WKT support
+- This is a known limitation in proj4js with open issues regarding WKT2 support
+
+**Current Workaround**: Projection parameters are hardcoded in the CONFIG object.
+
+**Future Solutions**:
+
+1. **Write PROJ.4 string to .aux.xml**: GDAL can store custom metadata fields. Generate and store a PROJ.4 string alongside the WKT:
+   ```bash
+   gdal_edit.py -mo "PROJ4=+proj=tmerc +lat_0=0 +lon_0=115 ..." image.tif
+   ```
+
+2. **Use a separate sidecar file**: Create a simple JSON or text file with PROJ.4 format:
+   ```json
+   {
+     "projection": "+proj=tmerc +lat_0=0 +lon_0=115 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs",
+     "extent": [-6007500, 6012500, -14422000, 14418000],
+     "size": [601, 1442]
+   }
+   ```
+
+3. **Server-side WKT conversion**: Convert WKT to PROJ.4 during image generation using PROJ/GDAL tools.
+
+4. **proj4-wasm**: Use a WebAssembly build of the full PROJ library, which handles WKT natively.
+
+5. **In R, extract PROJ.4 string**:
+   ```r
+   library(terra)
+   r <- rast("image.tif")
+   crs(r, proj=TRUE)  # Returns PROJ.4 format string
+   ```
+
+**Recommendation**: For workflows where the projection is constant (as in this project), hardcoding is acceptable and simpler. For dynamic projection support, implement option 2 (separate JSON sidecar) as it's the most straightforward.
+
 ## Technical Implementation Details
 
 ### Canvas Rendering Pipeline
@@ -230,6 +307,7 @@ if (distance > maxSegmentLength) {
 3. **Draw coastline** (if enabled, white semi-transparent)
 4. **Draw vessel track** (red line for date range)
 5. **Draw current position marker** (red circle with white outline)
+6. **Update external links** (view center links after pan/zoom)
 
 ### State Management
 
@@ -241,6 +319,7 @@ Single `state` object contains:
 - Transform state (scale, pan offset)
 - Interaction state (dragging, animation ID)
 - Data (vessel track, coastline, current image)
+- Transformer (proj4js projection object)
 
 **No React/Vue**: State changes trigger explicit `render()` and `updateDisplay()` calls.
 
@@ -264,6 +343,8 @@ Update UI elements (slider positions, text)
 updateDisplay() → loadImageWithFallback() → render()
   ↓
 Canvas redraw with new image/track
+  ↓
+updateExternalLinks() → Update href attributes
 ```
 
 ## Future Enhancements
@@ -319,7 +400,7 @@ Canvas redraw with new image/track
 **Current**: All resources on Pawsey S3-compatible storage
 - HTML viewer: `https://projects.pawsey.org.au/nuyina.map/index.html`
 - Imagery: `https://projects.pawsey.org.au/nuyina.map/NOAA/G02135/YYYY/*.png`
-- Vessel track: `https://projects.pawsey.org.au/nuyina.map/vessel_track_hourly.json`
+- Vessel track: `https://projects.pawsey.org.au/nuyina.map/vessel/vessel_track_hourly.json`
 
 **Benefits**:
 - No CORS issues (same origin)
@@ -338,7 +419,8 @@ Canvas redraw with new image/track
 **Projection/region changes**:
 1. Generate new imagery in desired projection
 2. Update `imageBaseUrl` in CONFIG
-3. Optionally update `startDate`/`daysPerPage` for new region
+3. Update projection/extent/imageWidth/imageHeight in CONFIG
+4. Optionally update `startDate`/`daysPerPage` for new region
 
 ### Data Preparation
 
@@ -353,8 +435,26 @@ dh <- d |>
 
 jsonlite::write_json(dh, "vessel_track_hourly.json", pretty = FALSE)
 
-#system("aws s3 --profile pawsey1197 cp vessel_track_hourly.json s3://nuyina.map/vessel/vessel_track_hourly.json")
+#system("aws s3 cp vessel_track_hourly.json s3://nuyina.map/vessel/vessel_track_hourly.json")
+```
 
+**Extracting PROJ.4 string from imagery** (for CONFIG):
+```r
+library(terra)
+r <- rast("concentration_v4.0_2024-01-01.tif")
+
+# Get PROJ.4 string
+crs(r, proj=TRUE)
+# "+proj=tmerc +lat_0=0 +lon_0=115 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+
+# Get extent
+ext(r)
+# SpatExtent : -6007500, 6012500, -14422000, 14418000 (xmin, xmax, ymin, ymax)
+
+# Get dimensions
+dim(r)
+# [1] 1442  601    3  (nrow, ncol, nlyr)
+# Note: imageWidth = ncol (601), imageHeight = nrow (1442)
 ```
 
 **Image generation**:
@@ -367,17 +467,18 @@ Code in project: https://github.com/mdsumner/seaice.map
 
 1. **proj4js integration**: Seamless coordinate transformation without server-side processing
 2. **Canvas rendering**: Excellent performance, direct control over drawing
-3. **Metadata-driven design**: .aux.xml approach enables true flexibility
-4. **Pagination strategy**: Year-long pages balance usability and detail
-5. **Fallback mechanisms**: Graceful degradation when data is incomplete
+3. **Pagination strategy**: Year-long pages balance usability and detail
+4. **Fallback mechanisms**: Graceful degradation when data is incomplete
+5. **Geometric segment filtering**: Simple but effective solution for projection discontinuities
 
 ### Challenges Overcome
 
-1. **Projection discontinuities**: Solved with geometric segment filtering
-2. **CORS complexity**: Resolved by consolidating hosting
+1. **Projection discontinuities**: Solved with geometric segment filtering (Euclidean distance check)
+2. **CORS complexity**: Resolved by consolidating hosting on single origin
 3. **Date range UX**: Multiple iterations to arrive at dual-slider design
 4. **Animation smoothness**: Careful state management to avoid flicker
 5. **Coastline performance**: Natural Earth's 110m simplification was key
+6. **WKT parsing**: Worked around proj4js limitation by hardcoding PROJ.4 string
 
 ### Design Trade-offs
 
@@ -388,6 +489,7 @@ Code in project: https://github.com/mdsumner/seaice.map
 | Daily imagery | Manageable file sizes | Temporal granularity |
 | Year-based pages | Usable slider | Less flexibility than voyage-based |
 | PNG images | Universal support | Larger than COG tiles |
+| Hardcoded projection | Simplicity, reliability | Manual update for new projections |
 
 ## Technical Specifications
 
@@ -402,7 +504,7 @@ Code in project: https://github.com/mdsumner/seaice.map
 
 ### Performance Characteristics
 - Initial load: ~2-5 seconds (depends on network)
-- Vessel track: 21,000 points → ~2MB JSON → instant rendering
+- Vessel track: ~120,000 points → ~2MB JSON → instant rendering
 - Coastline: ~130 line segments → sub-second load and transform
 - Image loading: ~500KB per PNG → 1-2 seconds per date
 - Animation: 60+ FPS at default speed, smooth pan/zoom
@@ -417,7 +519,7 @@ Code in project: https://github.com/mdsumner/seaice.map
 This viewer demonstrates that sophisticated geospatial visualization can be achieved with lightweight web technologies when the problem is well-scoped. By focusing on a specific use case (vessel tracks over custom-projection imagery) rather than building a general-purpose mapping application, we achieved:
 
 - **Simplicity**: Single HTML file, no build system
-- **Flexibility**: Projection-agnostic via metadata
+- **Flexibility**: Easy to adapt for different projections and regions
 - **Performance**: Smooth interaction with large datasets
 - **Extensibility**: Clear architecture for adding features
 
@@ -429,13 +531,14 @@ The design choices reflect the realities of Antarctic research data: custom proj
 - **Natural Earth Data**: https://www.naturalearthdata.com/
 - **GDAL PAM Format**: https://gdal.org/drivers/raster/pam.html
 - **NOAA Sea Ice Data**: https://nsidc.org/data/g02135
+- **proj4js WKT Issues**: https://github.com/proj4js/proj4js/issues (search for WKT)
 
 ## Contact & Acknowledgments
 
-**Development**: Michael Sumner, Australian Antarctic Division
-**Data Sources**: NOAA/NSIDC (sea ice), AAD (vessel tracks)
-**Infrastructure**: Pawsey Supercomputing Research Centre
+**Development**: Michael Sumner, Australian Antarctic Division  
+**Data Sources**: NOAA/NSIDC (sea ice), AAD (vessel tracks)  
+**Infrastructure**: Pawsey Supercomputing Research Centre  
 
 ---
 
-*Document Version 1.0 - December 2024*
+*Document Version 1.1 - December 2024*
