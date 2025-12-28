@@ -994,12 +994,17 @@
                 updateStatus(`Loaded ${state.vesselTrack.length} track points`);
 
                 // Return the date range of the vessel track
+                // Use reduce instead of spread to avoid call stack overflow with large arrays
                 if (state.vesselTrack.length > 0) {
-                    const trackDates = state.vesselTrack.map(p => p.datetime);
-                    return {
-                        minDate: new Date(Math.min(...trackDates)),
-                        maxDate: new Date(Math.max(...trackDates))
-                    };
+                    let minDate = state.vesselTrack[0].datetime;
+                    let maxDate = state.vesselTrack[0].datetime;
+                    for (let i = 1; i < state.vesselTrack.length; i++) {
+                        const dt = state.vesselTrack[i].datetime;
+                        if (dt < minDate) minDate = dt;
+                        if (dt > maxDate) maxDate = dt;
+                    }
+                    console.log('Track date range:', minDate, 'to', maxDate);
+                    return { minDate, maxDate };
                 }
                 return null;
             } catch (e) {
