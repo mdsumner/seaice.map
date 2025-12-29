@@ -463,6 +463,7 @@
             imageBaseUrl: 'https://projects.pawsey.org.au/nuyina.map/NOAA/G02135',
             trackUrl: 'https://projects.pawsey.org.au/nuyina.map/vessel/vessel_track_hourly.json',
             sliderStepMs: 3600000,  // Slider step in milliseconds (3600000 = 1 hour, 600000 = 10 min)
+            initialRangeDays: 14,  // Default time window to show on load (in days)
             hoursPerPage: 8760,  // Show 1 year per page (365 * 24 hours)
             endDate: (() => {
                 const today = new Date();
@@ -1570,9 +1571,12 @@
             // Get dates for current page
             state.dates = getPageDates();
 
-            // Default to last 14 days of the range
+            // Default to last N days of the range (calculate positions based on step size)
+            const msPerDay = 86400000;
+            const stepsPerDay = msPerDay / CONFIG.sliderStepMs;
+            const initialRangeSteps = Math.round(CONFIG.initialRangeDays * stepsPerDay);
             state.endDateIndex = state.dates.length - 1;
-            state.startDateIndex = Math.max(0, state.endDateIndex - 13);
+            state.startDateIndex = Math.max(0, state.endDateIndex - initialRangeSteps);
 
             // Setup sliders
             const sliderStart = document.getElementById('slider-start');
