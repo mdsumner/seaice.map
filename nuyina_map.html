@@ -126,27 +126,6 @@
             margin-bottom: 10px;
         }
 
-        .date-time-input {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .time-input {
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 4px;
-            color: #e0e0e0;
-            padding: 2px 6px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-
-        .time-input:focus {
-            outline: none;
-            border-color: #4a9eff;
-        }
-
         #datetime-readout {
             font-family: monospace;
             font-size: 11px;
@@ -453,16 +432,8 @@
                     <input type="range" id="slider-end" class="time-slider" min="0" max="364" value="364" step="1">
                 </div>
                 <div id="date-range">
-                    <div class="date-time-input">
-                        <span id="start-date"></span>
-                        <input type="time" id="start-time-input" class="time-input" value="00:00" step="600" title="Start time (UTC)">
-                        <span style="color: #666;">UTC</span>
-                    </div>
-                    <div class="date-time-input">
-                        <input type="time" id="end-time-input" class="time-input" value="23:59" step="600" title="End time (UTC)">
-                        <span style="color: #666;">UTC</span>
-                        <span id="end-date"></span>
-                    </div>
+                    <span id="start-date"></span>
+                    <span id="end-date"></span>
                 </div>
             </div>
             <div id="info">
@@ -491,7 +462,7 @@
         const CONFIG = {
             imageBaseUrl: 'https://projects.pawsey.org.au/nuyina.map/NOAA/G02135',
             trackUrl: 'https://projects.pawsey.org.au/nuyina.map/vessel/vessel_track_hourly.json',
-            daysPerPage: 365,  // Show 1 year per page
+            hoursPerPage: 8760,  // Show 1 year per page (365 * 24 hours)
             endDate: (() => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -524,8 +495,6 @@
             totalPages: 0,
             startDateIndex: 0,
             endDateIndex: 0,
-            startTimeUTC: '00:00',  // HH:MM in UTC
-            endTimeUTC: '23:59',    // HH:MM in UTC
             vesselTrack: [],
             transform: {
                 scale: 1,
@@ -613,7 +582,7 @@
             }
         }
 
-        // Generate all available dates
+        // Generate all available timestamps (hourly resolution)
         function generateAllDates() {
             const dates = [];
             const start = new Date(CONFIG.startDate);
@@ -622,7 +591,7 @@
             let current = new Date(start);
             while (current <= end) {
                 dates.push(new Date(current));
-                current.setDate(current.getDate() + 1);
+                current.setTime(current.getTime() + 3600000);  // Add 1 hour (3600000 ms)
             }
 
             return dates;
@@ -630,8 +599,8 @@
 
         // Get dates for current page
         function getPageDates() {
-            const startIdx = state.currentPage * CONFIG.daysPerPage;
-            const endIdx = Math.min(startIdx + CONFIG.daysPerPage, state.allDates.length);
+            const startIdx = state.currentPage * CONFIG.hoursPerPage;
+            const endIdx = Math.min(startIdx + CONFIG.hoursPerPage, state.allDates.length);
             return state.allDates.slice(startIdx, endIdx);
         }
 
@@ -696,13 +665,9 @@
             return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} UTC`;
         }
 
-        // Get full datetime from date index and time string (HH:MM in UTC)
-        function getFullDateTime(dateIndex, timeUTC) {
-            const date = state.dates[dateIndex];
-            const [hours, minutes] = timeUTC.split(':').map(Number);
-            const fullDate = new Date(date);
-            fullDate.setUTCHours(hours, minutes, 0, 0);
-            return fullDate;
+        // Get datetime from slider index (now hourly resolution)
+        function getFullDateTime(dateIndex) {
+            return new Date(state.dates[dateIndex]);
         }
 
         // Get image URL for a date
@@ -758,7 +723,7 @@
 
             // If we're not on the first page, search previous pages for an available image
             // Calculate global index and search backwards through allDates
-            const globalStartIndex = state.currentPage * CONFIG.daysPerPage;
+            const globalStartIndex = state.currentPage * CONFIG.hoursPerPage;
             for (let globalIdx = globalStartIndex - 1; globalIdx >= 0; globalIdx--) {
                 const date = state.allDates[globalIdx];
                 const url = getImageUrl(date);
@@ -932,8 +897,8 @@
             let vesselLon = null;
 
             if (state.vesselTrack.length > 0) {
-                const startDateTime = getFullDateTime(state.startDateIndex, state.startTimeUTC);
-                const endDateTime = getFullDateTime(state.endDateIndex, state.endTimeUTC);
+                const startDateTime = getFullDateTime(state.startDateIndex);
+                const endDateTime = getFullDateTime(state.endDateIndex);
                 const relevantPoints = state.vesselTrack.filter(p =>
                     p.datetime >= startDateTime && p.datetime <= endDateTime
                 );
@@ -1104,8 +1069,8 @@
 
             // Draw vessel track for the selected date/time range
             if (state.vesselTrack.length > 0) {
-                const startDateTime = getFullDateTime(state.startDateIndex, state.startTimeUTC);
-                const endDateTime = getFullDateTime(state.endDateIndex, state.endTimeUTC);
+                const startDateTime = getFullDateTime(state.startDateIndex);
+                const endDateTime = getFullDateTime(state.endDateIndex);
                 const relevantPoints = state.vesselTrack.filter(p =>
                     p.datetime >= startDateTime && p.datetime <= endDateTime
                 );
@@ -1179,13 +1144,13 @@
             sliderRange.style.left = percent1 + '%';
             sliderRange.style.width = (percent2 - percent1) + '%';
 
-            // Update date range display
-            document.getElementById('start-date').textContent = formatDate(state.dates[state.startDateIndex]);
-            document.getElementById('end-date').textContent = formatDate(state.dates[state.endDateIndex]);
+            // Update date range display (now shows full datetime since slider is hourly)
+            document.getElementById('start-date').textContent = formatDateTime(state.dates[state.startDateIndex]);
+            document.getElementById('end-date').textContent = formatDateTime(state.dates[state.endDateIndex]);
 
             // Update datetime readout with actual track boundaries
-            const startDateTime = getFullDateTime(state.startDateIndex, state.startTimeUTC);
-            const endDateTime = getFullDateTime(state.endDateIndex, state.endTimeUTC);
+            const startDateTime = getFullDateTime(state.startDateIndex);
+            const endDateTime = getFullDateTime(state.endDateIndex);
 
             // Find actual first and last track points in the selected range
             if (state.vesselTrack.length > 0) {
@@ -1406,24 +1371,6 @@
                 }
             });
 
-            // Time inputs
-            const startTimeInput = document.getElementById('start-time-input');
-            const endTimeInput = document.getElementById('end-time-input');
-
-            startTimeInput.addEventListener('input', (e) => {
-                state.startTimeUTC = e.target.value;
-                updateSliderRange();
-                render();
-                updateExternalLinks();
-            });
-
-            endTimeInput.addEventListener('input', (e) => {
-                state.endTimeUTC = e.target.value;
-                updateSliderRange();
-                render();
-                updateExternalLinks();
-            });
-
             // Range dragging
             const sliderRange = document.getElementById('slider-range');
             const sliderContainer = document.getElementById('slider-container');
@@ -1616,7 +1563,7 @@
 
             // Generate all dates and calculate pagination (now includes vessel track range)
             state.allDates = generateAllDates();
-            state.totalPages = Math.ceil(state.allDates.length / CONFIG.daysPerPage);
+            state.totalPages = Math.ceil(state.allDates.length / CONFIG.hoursPerPage);
             state.currentPage = state.totalPages - 1;  // Start on most recent page
 
             // Get dates for current page
