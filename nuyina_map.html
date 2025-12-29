@@ -1200,8 +1200,7 @@
                 if (relevantPoints.length > 0) {
                     const firstPoint = relevantPoints[0];
                     const lastPoint = relevantPoints[relevantPoints.length - 1];
-                    document.getElementById('start-datetime').textContent =
-                        `${formatDateTime(firstPoint.datetime)} (${relevantPoints.length} pts)`;
+                    document.getElementById('start-datetime').textContent = formatDateTime(firstPoint.datetime);
                     document.getElementById('end-datetime').textContent = formatDateTime(lastPoint.datetime);
                 } else {
                     document.getElementById('start-datetime').textContent = 'No track data in range';
