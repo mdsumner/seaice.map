@@ -1518,14 +1518,18 @@
             console.log('CONFIG.endDate before check:', CONFIG.endDate.toISOString());
 
             // Extend CONFIG.endDate if vessel track has data beyond current endDate
+            // Compare using end-of-day to handle timezone edge cases
             if (trackRange) {
-                console.log('Track maxDate:', trackRange.maxDate.toISOString());
-                console.log('Comparison result:', trackRange.maxDate > CONFIG.endDate);
+                const trackEndOfDay = new Date(trackRange.maxDate);
+                trackEndOfDay.setUTCHours(23, 59, 59, 999);
 
-                if (trackRange.maxDate > CONFIG.endDate) {
-                    console.log('Extending date range to match vessel track');
-                    CONFIG.endDate = new Date(trackRange.maxDate);
-                    CONFIG.endDate.setUTCHours(23, 59, 59, 999);  // End of day UTC
+                console.log('Track maxDate:', trackRange.maxDate.toISOString());
+                console.log('Track end of day:', trackEndOfDay.toISOString());
+                console.log('CONFIG.endDate:', CONFIG.endDate.toISOString());
+
+                if (trackEndOfDay > CONFIG.endDate) {
+                    console.log('Extending date range to include full track day');
+                    CONFIG.endDate = trackEndOfDay;
                     console.log('New CONFIG.endDate:', CONFIG.endDate.toISOString());
                 }
             }
