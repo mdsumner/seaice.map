@@ -462,6 +462,7 @@
         const CONFIG = {
             imageBaseUrl: 'https://projects.pawsey.org.au/nuyina.map/NOAA/G02135',
             trackUrl: 'https://projects.pawsey.org.au/nuyina.map/vessel/vessel_track_hourly.json',
+            sliderStepMs: 3600000,  // Slider step in milliseconds (3600000 = 1 hour, 600000 = 10 min)
             hoursPerPage: 8760,  // Show 1 year per page (365 * 24 hours)
             endDate: (() => {
                 const today = new Date();
@@ -591,7 +592,7 @@
             let current = new Date(start);
             while (current <= end) {
                 dates.push(new Date(current));
-                current.setTime(current.getTime() + 3600000);  // Add 1 hour (3600000 ms)
+                current.setTime(current.getTime() + CONFIG.sliderStepMs);
             }
 
             return dates;
