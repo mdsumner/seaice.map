@@ -1186,11 +1186,29 @@
             document.getElementById('start-time-input').value = state.startTimeUTC;
             document.getElementById('end-time-input').value = state.endTimeUTC;
 
-            // Update datetime readout with full date+time
+            // Update datetime readout with actual track boundaries
             const startDateTime = getFullDateTime(state.startDateIndex, state.startTimeUTC);
             const endDateTime = getFullDateTime(state.endDateIndex, state.endTimeUTC);
-            document.getElementById('start-datetime').textContent = formatDateTime(startDateTime);
-            document.getElementById('end-datetime').textContent = formatDateTime(endDateTime);
+
+            // Find actual first and last track points in the selected range
+            if (state.vesselTrack.length > 0) {
+                const relevantPoints = state.vesselTrack.filter(p =>
+                    p.datetime >= startDateTime && p.datetime <= endDateTime
+                );
+
+                if (relevantPoints.length > 0) {
+                    const firstPoint = relevantPoints[0];
+                    const lastPoint = relevantPoints[relevantPoints.length - 1];
+                    document.getElementById('start-datetime').textContent = formatDateTime(firstPoint.datetime);
+                    document.getElementById('end-datetime').textContent = formatDateTime(lastPoint.datetime);
+                } else {
+                    document.getElementById('start-datetime').textContent = 'No track data';
+                    document.getElementById('end-datetime').textContent = 'in range';
+                }
+            } else {
+                document.getElementById('start-datetime').textContent = formatDateTime(startDateTime);
+                document.getElementById('end-datetime').textContent = formatDateTime(endDateTime);
+            }
         }
 
         // Fit image to canvas
