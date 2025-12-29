@@ -780,7 +780,8 @@
         async function loadCoastline() {
             try {
                 // Using simplified GeoJSON coastline
-                const response = await fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_coastline.geojson');
+                const response = await fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/refs/heads/master/geojson/ne_10m_coastline.geojson');
+                //const response = await fetch(  'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/refs/heads/master/geojson/ne_10m_bathymetry_J_1000.geojson');
                 const data = await response.json();
 
                 console.log('Coastline data loaded:', data.features.length, 'features');
