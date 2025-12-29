@@ -1022,7 +1022,7 @@
                 state.vesselTrack = data.map(point => {
                     const pixels = lonLatToPixel(point.longitude, point.latitude);
                     return {
-                        datetime: new Date(point.datetime),
+                        datetime: new Date(point.datetime.replace(' ', 'T') + 'Z'),
                         x: pixels.x,
                         y: pixels.y,
                         lon: point.longitude,
