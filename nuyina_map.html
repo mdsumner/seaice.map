@@ -1183,10 +1183,6 @@
             document.getElementById('start-date').textContent = formatDate(state.dates[state.startDateIndex]);
             document.getElementById('end-date').textContent = formatDate(state.dates[state.endDateIndex]);
 
-            // Sync time inputs with state
-            document.getElementById('start-time-input').value = state.startTimeUTC;
-            document.getElementById('end-time-input').value = state.endTimeUTC;
-
             // Update datetime readout with actual track boundaries
             const startDateTime = getFullDateTime(state.startDateIndex, state.startTimeUTC);
             const endDateTime = getFullDateTime(state.endDateIndex, state.endTimeUTC);
