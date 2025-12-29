@@ -1199,11 +1199,12 @@
                 if (relevantPoints.length > 0) {
                     const firstPoint = relevantPoints[0];
                     const lastPoint = relevantPoints[relevantPoints.length - 1];
-                    document.getElementById('start-datetime').textContent = formatDateTime(firstPoint.datetime);
+                    document.getElementById('start-datetime').textContent =
+                        `${formatDateTime(firstPoint.datetime)} (${relevantPoints.length} pts)`;
                     document.getElementById('end-datetime').textContent = formatDateTime(lastPoint.datetime);
                 } else {
-                    document.getElementById('start-datetime').textContent = 'No track data';
-                    document.getElementById('end-datetime').textContent = 'in range';
+                    document.getElementById('start-datetime').textContent = 'No track data in range';
+                    document.getElementById('end-datetime').textContent = '';
                 }
             } else {
                 document.getElementById('start-datetime').textContent = formatDateTime(startDateTime);
@@ -1413,14 +1414,14 @@
             const startTimeInput = document.getElementById('start-time-input');
             const endTimeInput = document.getElementById('end-time-input');
 
-            startTimeInput.addEventListener('change', (e) => {
+            startTimeInput.addEventListener('input', (e) => {
                 state.startTimeUTC = e.target.value;
                 updateSliderRange();
                 render();
                 updateExternalLinks();
             });
 
-            endTimeInput.addEventListener('change', (e) => {
+            endTimeInput.addEventListener('input', (e) => {
                 state.endTimeUTC = e.target.value;
                 updateSliderRange();
                 render();
