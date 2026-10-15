@@ -67,3 +67,23 @@ Please note that the seaice.map project is released with a [Contributor
 Code of
 Conduct](https://contributor-covenant.org/version/2/1/CODE_OF_CONDUCT.html).
 By contributing to this project, you agree to abide by its terms.
+
+## Where things live
+
+The landing page for everything Nuyina underway is
+<https://mdsumner.github.io/nuyina-underway/>.
+
+- [mdsumner/nuyina-underway](https://github.com/mdsumner/nuyina-underway): the
+  aggregator. GitHub Actions pull the AAD GeoServer WFS into a Parquet file on
+  its v0.0.1 release, and its `docs/` holds the landing page and the Proximal
+  tracker app.
+- [mdsumner/nuyina.underway](https://github.com/mdsumner/nuyina.underway): R
+  package to read the data up to minutes-recent (Parquet cache plus live WFS).
+  Its `envdata/` holds the satellite environmental-data extraction, folded in
+  from nuyina.envdata.
+- [mdsumner/seaice.map](https://github.com/mdsumner/seaice.map): targets
+  pipeline rendering the sea ice and vessel map to Pawsey object storage
+  (bucket nuyina.map).
+
+Archived and folded: nuyina-proximal (now `docs/proximal/` in
+nuyina-underway), nuyina.envdata (now `envdata/` in nuyina.underway).
